@@ -21,6 +21,8 @@ public class Order {
 
     private Double price;
 
+    //order receiving date
+    //todo consider adding order finishing date
     private LocalDateTime orderDate;
 
     @OneToMany(mappedBy = "order",fetch = FetchType.LAZY)

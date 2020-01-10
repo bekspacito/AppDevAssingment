@@ -7,8 +7,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 
 @Controller
-@RequestMapping("/")
-public class PagesController {
+@RequestMapping("/unit")
+public class UnitPagesController {
 
     @GetMapping
     public ModelAndView getHelloPage(){
