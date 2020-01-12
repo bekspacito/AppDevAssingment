@@ -32,26 +32,28 @@ public class UnitController {
 
         try {
             UnitRespBody respBody = unitRepository.findById(id)
-                    .map(u -> new UnitRespBody(u.getId(), u.getName()))
-                    .orElseThrow(IllegalArgumentException::new);
+                                                    .map(u -> new UnitRespBody(u.getId(), u.getName()))
+                                                    .orElseThrow(IllegalArgumentException::new);
 
             return ResponseEntity.ok(respBody);
 
         }catch (IllegalArgumentException ex){
-            return ResponseEntity.badRequest().body(getRespBody(BadReqSubcodes.NO_SUCH_UNIT));
+            return ResponseEntity.notFound().build();
         }
     }
 
-    @GetMapping("/{name}")
-    public ResponseEntity<?> findAllByPartName(@PathVariable String name){
-        List<UnitRespBody> resp = unitRepository.findAllByPartName(name).stream()
+    @GetMapping("/pname")
+    public ResponseEntity<?> findAllByPartName(@RequestBody UnitRespBody reqBody){
+        final String key = "%" + reqBody.getName() + "%";
+
+        List<UnitRespBody> resp = unitRepository.findByNameLike(key).stream()
                                                  .map(unit -> new UnitRespBody(unit.getId(),unit.getName()))
                                                  .collect(Collectors.toList());
 
         return ResponseEntity.ok(resp);
     }
 
-    @GetMapping
+    @GetMapping("all")
     public ResponseEntity<?> findAll(){
 
         List<UnitRespBody> resp = StreamSupport.stream(unitRepository.findAll().spliterator(),false)
@@ -86,18 +88,18 @@ public class UnitController {
         unit.setId(id);
         unit.setName(reqBody.getName());
 
-        if(unitRepository.findById(id).isPresent()){
+        if(unitRepository.existsById(id)){
             unitRepository.save(unit);
             return ResponseEntity.ok().build();
         }
 
-        return ResponseEntity.badRequest()
-                                .body(getRespBody(BadReqSubcodes.NO_SUCH_UNIT));
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUnit(@PathVariable Long id){
-        unitRepository.deleteById(id);
+        if(unitRepository.existsById(id))
+                unitRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
