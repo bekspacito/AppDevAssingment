@@ -1,4 +1,4 @@
-package edu.myrza.appdev.labone.payload;
+package edu.myrza.appdev.labone.payload.unit;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
