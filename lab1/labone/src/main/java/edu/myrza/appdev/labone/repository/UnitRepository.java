@@ -8,4 +8,6 @@ import java.util.List;
 public interface UnitRepository extends CrudRepository<Unit,Long> {
 
     List<Unit> findByNameLike(String part);
+
+    boolean existsUnitByName(String name);
 }

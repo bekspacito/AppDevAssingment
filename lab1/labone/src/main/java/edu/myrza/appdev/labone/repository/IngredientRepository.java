@@ -9,4 +9,6 @@ public interface IngredientRepository extends CrudRepository<Ingredient,Long>{
 
     List<Ingredient> findByNameLike(String part);
 
+    boolean existsIngredientByName(String name);
+
 }

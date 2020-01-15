@@ -5,11 +5,13 @@ import edu.myrza.appdev.labone.payload.unit.UnitReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.repository.UnitRepository;
 import edu.myrza.appdev.labone.util.BadReqSubcodes;
+import edu.myrza.appdev.labone.util.BadRequestException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,6 +48,7 @@ public class UnitController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteById(@PathVariable Long id){
         try{
             unitRepository.deleteById(id);
@@ -57,21 +60,27 @@ public class UnitController {
         return ResponseEntity.ok().build();
     }
 
+    //Now no one can delete an entity that we are trying to update here.
     @PostMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> update(@PathVariable Long id,@RequestBody UnitReqBody reqBody){
 
-        Unit unit = new Unit();
-        unit.setId(id);
-        //todo unique name constraint
-        unit.setName(reqBody.getName());
+        try {
 
-        //todo someone could delete an entity that we are trying to update here. Deal with it
-        if(unitRepository.existsById(id)){
+            if(unitRepository.existsUnitByName(reqBody.getName()))
+                throw new BadRequestException(BadReqSubcodes.UUNC_VIOLATION);
+
+            Unit unit = unitRepository.findById(id).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_UNIT));
+
+            if(reqBody.getName() != null) unit.setName(reqBody.getName());
+
             unitRepository.save(unit);
-            return ResponseEntity.ok().build();
+
+        }catch (BadRequestException ex){
+            return ResponseEntity.badRequest().body(BadReqSubcodes.getRespBody(ex.getSubcode()));
         }
 
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
@@ -89,9 +98,9 @@ public class UnitController {
         }
     }
 
-    @GetMapping("/pname")
-    public ResponseEntity<?> findAllByPartName(@RequestBody UnitRespBody reqBody){
-        final String key = "%" + reqBody.getName() + "%";
+    @GetMapping("/pname/{partname}")
+    public ResponseEntity<?> findAllByPartName(@PathVariable String partname){
+        final String key = "%" + partname + "%";
 
         List<UnitRespBody> resp = unitRepository.findByNameLike(key).stream()
                                                  .map(unit -> new UnitRespBody(unit.getId(),unit.getName()))
@@ -100,7 +109,7 @@ public class UnitController {
         return ResponseEntity.ok(resp);
     }
 
-    @GetMapping("all")
+    @GetMapping("/all")
     public ResponseEntity<?> findAll(){
 
         List<UnitRespBody> resp = StreamSupport.stream(unitRepository.findAll().spliterator(),false)

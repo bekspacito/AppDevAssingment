@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -66,7 +67,9 @@ public class IngredientController {
         return ResponseEntity.ok().build();
     }
 
+
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteById(@PathVariable Long id){
         try{
             ingrRepository.deleteById(id);
@@ -79,9 +82,35 @@ public class IngredientController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> update(@RequestBody IngReqBody reqBody){
-        // todo name unique constraint violation
-        // todo someone could delete an entity while we are updating it
+    @Transactional
+    public ResponseEntity<?> update(@PathVariable Long id,@RequestBody IngReqBody reqBody){
+
+        String name  = reqBody.getName();
+        Double price = reqBody.getPrice();
+        Long unitId  = reqBody.getUnitId();
+
+        try {
+            if(ingrRepository.existsIngredientByName(reqBody.getName()))
+                throw new BadRequestException(BadReqSubcodes.UINC_VIOLATION);
+
+            Ingredient ingToUpd = ingrRepository.findById(id).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_INGR));
+
+            if(name != null) ingToUpd.setName(name);
+            if(price != null) ingToUpd.setPrice(price); //todo check if price equals to or is below zero
+            if(unitId != null) {
+                Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_UNIT));
+                ingToUpd.setUnit(unit);
+            }
+
+            ingrRepository.save(ingToUpd);
+
+        }catch (BadRequestException ex){
+
+            return ResponseEntity.badRequest().body(BadReqSubcodes.getRespBody(ex.getSubcode()));
+
+        }
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
@@ -104,9 +133,9 @@ public class IngredientController {
         return ResponseEntity.ok(resBody);
     }
 
-    @GetMapping("/pname")
-    public ResponseEntity<?> findByPartName(@RequestParam String name){
-        final String key = "%" + name + "%";
+    @GetMapping("/pname/{partname}")
+    public ResponseEntity<?> findByPartName(@PathVariable String partname){
+        final String key = "%" + partname + "%";
 
         List<IngFindResBody> resp = ingrRepository.findByNameLike(key).stream()
                                                     .map(IngredientController::convert)
