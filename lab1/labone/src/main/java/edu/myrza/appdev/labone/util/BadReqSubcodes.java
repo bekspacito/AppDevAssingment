@@ -4,19 +4,31 @@ import edu.myrza.appdev.labone.payload.BadRequestRespBody;
 
 public enum BadReqSubcodes {
 
-    UUNC_VIOLATION, // Unique unit name constraint violation
-    NO_SUCH_UNIT,   // No such unit with that id exist
+    WRONG_INPUT,     // When client's input data(usually it's json data) didn't make it through validation
 
-    UINC_VIOLATION, // Unique ingredient name constraint violation
-    NO_SUCH_INGR;   // No such ingredient with that id exist
+    UUNC_VIOLATION,  // Unique unit name constraint violation
+    NO_SUCH_UNIT,    // No such unit with that id exist
+
+    UINC_VIOLATION,  // Unique ingredient name constraint violation
+    NO_SUCH_INGR,    // No such ingredient with that id exist
+
+    EMPTY_INGR_NAME, // Ingredient cannot be created without name set
+    EMPTY_INGR_PRICE,// Ingredient cannot be created without price set
+    EMPTY_INGR_UNIT; // Ingredient cannot be created without unit set
 
     public Integer getCode(){
         switch (this){
-            case UUNC_VIOLATION :   return 100;
-            case NO_SUCH_UNIT   :   return 101;
+            case WRONG_INPUT    :   return -100;
 
-            case UINC_VIOLATION :   return 102;
-            case NO_SUCH_INGR   :   return 103;
+            case UUNC_VIOLATION :   return -101;
+            case NO_SUCH_UNIT   :   return -102;
+
+            case UINC_VIOLATION :   return -103;
+            case NO_SUCH_INGR   :   return -104;
+
+            case EMPTY_INGR_NAME:   return -105;
+            case EMPTY_INGR_UNIT:   return -106;
+            case EMPTY_INGR_PRICE:  return -107;
 
             default : throw new IllegalArgumentException("NO SUCH BAD REQUEST SUBCODE");
         }

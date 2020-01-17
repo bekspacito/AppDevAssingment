@@ -1,7 +1,8 @@
 package edu.myrza.appdev.labone.controller.api;
 
 import edu.myrza.appdev.labone.domain.Unit;
-import edu.myrza.appdev.labone.payload.unit.UnitReqBody;
+import edu.myrza.appdev.labone.payload.unit.UnitCreateReqBody;
+import edu.myrza.appdev.labone.payload.unit.UnitUpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.repository.UnitRepository;
 import edu.myrza.appdev.labone.util.BadReqSubcodes;
@@ -12,8 +13,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -30,7 +33,11 @@ public class UnitController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody UnitReqBody reqBody){
+    public ResponseEntity<?> create(@Valid @RequestBody UnitCreateReqBody reqBody, Errors errors){
+
+        if(errors.hasErrors())
+            return ResponseEntity.badRequest()
+                                .body(BadReqSubcodes.getRespBody(BadReqSubcodes.WRONG_INPUT));
 
         Unit unit = new Unit();
         unit.setName(reqBody.getName());
@@ -63,7 +70,7 @@ public class UnitController {
     //Now no one can delete an entity that we are trying to update here.
     @PostMapping("/{id}")
     @Transactional
-    public ResponseEntity<?> update(@PathVariable Long id,@RequestBody UnitReqBody reqBody){
+    public ResponseEntity<?> update(@PathVariable Long id,@RequestBody UnitUpdateReqBody reqBody){
 
         try {
 

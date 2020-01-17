@@ -2,8 +2,9 @@ package edu.myrza.appdev.labone.controller.api;
 
 import edu.myrza.appdev.labone.domain.Ingredient;
 import edu.myrza.appdev.labone.domain.Unit;
-import edu.myrza.appdev.labone.payload.ingredient.IngReqBody;
+import edu.myrza.appdev.labone.payload.ingredient.IngCreateReqBody;
 import edu.myrza.appdev.labone.payload.ingredient.IngFindResBody;
+import edu.myrza.appdev.labone.payload.ingredient.IngUpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.repository.IngredientRepository;
 import edu.myrza.appdev.labone.repository.UnitRepository;
@@ -15,8 +16,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -37,7 +40,11 @@ public class IngredientController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody IngReqBody reqBody){
+    public ResponseEntity<?> create(@Valid @RequestBody IngCreateReqBody reqBody, Errors errors){
+
+        if(errors.hasErrors())
+            return ResponseEntity.badRequest()
+                                .body(BadReqSubcodes.getRespBody(BadReqSubcodes.WRONG_INPUT));
 
         String name  = reqBody.getName();
         Double price = reqBody.getPrice();
@@ -83,7 +90,7 @@ public class IngredientController {
 
     @PostMapping("/{id}")
     @Transactional
-    public ResponseEntity<?> update(@PathVariable Long id,@RequestBody IngReqBody reqBody){
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody IngUpdateReqBody reqBody){
 
         String name  = reqBody.getName();
         Double price = reqBody.getPrice();
