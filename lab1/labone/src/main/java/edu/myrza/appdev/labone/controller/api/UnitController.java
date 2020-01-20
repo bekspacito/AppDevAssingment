@@ -57,6 +57,7 @@ public class UnitController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> deleteById(@PathVariable Long id){
+        //todo cannot delete unit if there are ingredients that use given unit
         try{
             unitRepository.deleteById(id);
         }catch (EmptyResultDataAccessException ex){
