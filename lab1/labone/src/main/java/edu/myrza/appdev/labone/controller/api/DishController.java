@@ -3,32 +3,35 @@ package edu.myrza.appdev.labone.controller.api;
 import edu.myrza.appdev.labone.domain.Dish;
 import edu.myrza.appdev.labone.domain.DishIngredient;
 import edu.myrza.appdev.labone.domain.Ingredient;
-import edu.myrza.appdev.labone.payload.dish.DishCrtIngData;
 import edu.myrza.appdev.labone.payload.dish.DishCrtReqBody;
+import edu.myrza.appdev.labone.payload.dish.DishUpdIngData;
 import edu.myrza.appdev.labone.payload.dish.DishUpdReqBody;
 import edu.myrza.appdev.labone.repository.DishIngredientRepository;
 import edu.myrza.appdev.labone.repository.DishRepository;
 import edu.myrza.appdev.labone.repository.IngredientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/dish")
 public class DishController {
 
-    private DishRepository dishRep;
-    private DishIngredientRepository dishIngRep;
-    private IngredientRepository ingRep;
+    private DishRepository dishRepo;
+    private DishIngredientRepository dishIngRepo;
+    private IngredientRepository ingRepo;
 
     @Autowired
-    DishController(DishRepository dishRep,
-                   IngredientRepository ingRep,
-                   DishIngredientRepository dishIngRep)
+    DishController(DishRepository dishRepo,
+                   IngredientRepository ingRepo,
+                   DishIngredientRepository dishIngRepo)
     {
-        this.dishIngRep = dishIngRep;
-        this.dishRep = dishRep;
-        this.ingRep = ingRep;
+        this.dishIngRepo = dishIngRepo;
+        this.dishRepo = dishRepo;
+        this.ingRepo = ingRepo;
     }
 
     @PostMapping
@@ -41,13 +44,13 @@ public class DishController {
         dish.setPrice(reqBody.getPrice());
 
         //todo handle unique name constraint violation
-        final Dish _dish = dishRep.save(dish);
+        final Dish _dish = dishRepo.save(dish);
 
         //todo create collection of DishIngredient objects and save them
         reqBody.getIngredients().stream()
                              .map(ingData ->{
                                  //todo write ingredient service and delegate this to it
-                                 Ingredient ing = ingRep.findById(ingData.getId())
+                                 Ingredient ing = ingRepo.findById(ingData.getId())
                                                          .orElseThrow(IllegalArgumentException::new);
 
                                  DishIngredient res = new DishIngredient();
@@ -59,23 +62,65 @@ public class DishController {
                              })
                              .forEach(dishIng -> {
                                  //todo handle unique constaint violation exceptions
-                                 dishIngRep.save(dishIng);
+                                 dishIngRepo.save(dishIng);
                              });
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody DishUpdReqBody reqBody){
 
-        //todo new name
-        //todo new price
+        Dish dish = dishRepo.findById(id)
+                             .orElseThrow(IllegalArgumentException::new);
 
-        //todo delete ingredients that no longer in the recipe
-        //todo check if new ingredients exist in the db
-        //todo set correct amounts
+        Set<DishIngredient> currDishIngs = dish.getDishIngredients();
 
-        return null;
+        String name  = reqBody.getName();
+        Double price = reqBody.getPrice();
+        Set<DishUpdIngData> newDishIngs = reqBody.getIngredients();
+
+        if(name != null)  dish.setName(name);
+        if(price != null) dish.setPrice(price);
+        if(newDishIngs != null && !newDishIngs.isEmpty()) {
+            //check if all exist
+            for (DishUpdIngData ingData : newDishIngs){
+                Long ingId = ingData.getId();
+                if(ingId == null) {} //todo ing id can't be null/you should set id
+                if(!ingRepo.existsById(ingData.getId())) {} //todo ing doen't exist
+            }
+
+            for (DishUpdIngData ingData : newDishIngs) {
+                if (ingData.getStatus().equals("NEW")) {
+                    Ingredient ing = ingRepo.findById(ingData.getId())
+                                             .orElseThrow(IllegalArgumentException::new);
+
+                    DishIngredient dishIng = new DishIngredient();
+                    dishIng.setIngredient(ing);
+                    dishIng.setDish(dish);
+                    dishIng.setAmount(ingData.getAmount());
+
+                    currDishIngs.add(dishIng);
+
+                } else if (ingData.getStatus().equals("UPD")) {
+                    Long _id = ingData.getId();
+                    Double _amount = ingData.getAmount();
+
+                    currDishIngs.stream()
+                             .filter(di -> di.getId().equals(_id))
+                             .findAny()
+                             .ifPresent(di -> di.setAmount(_amount));
+
+                } else if (ingData.getStatus().equals("DEL")) {
+                    currDishIngs.removeIf(di -> di.getId().equals(ingData.getId()));
+                }
+            }
+        }
+
+        dishRepo.save(dish);
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")

@@ -10,5 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DishUpdIngData {
      private Long id; //ingredient id
+     //status values are "NEW","UPD","DEL"
+     private String status; //todo change to enum later
      private Double amount;
 }

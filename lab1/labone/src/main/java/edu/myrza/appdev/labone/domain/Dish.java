@@ -22,7 +22,10 @@ public class Dish {
 
     private Double price;
 
-    @OneToMany(mappedBy = "dish",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dish",
+               fetch = FetchType.LAZY,
+               cascade = CascadeType.ALL,
+               orphanRemoval = true)
     private Set<DishIngredient> dishIngredients;
 
 }
