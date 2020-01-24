@@ -4,6 +4,8 @@ import edu.myrza.appdev.labone.payload.BadRequestRespBody;
 
 public enum BadReqSubcodes {
 
+    PRICE_BELOW_ZERO,
+    NO_SUCH_ENTITY,  // When user wants to manipulate an entity through id that doesn't exist
     WRONG_INPUT,     // When client's input data(usually it's json data) didn't make it through validation
 
     UUNC_VIOLATION,  // Unique unit name constraint violation
@@ -16,8 +18,13 @@ public enum BadReqSubcodes {
     EMPTY_INGR_PRICE,// Ingredient cannot be created without price set
     EMPTY_INGR_UNIT; // Ingredient cannot be created without unit set
 
+    public String toString(){
+        return this.name();
+    }
+
     public Integer getCode(){
         switch (this){
+            case NO_SUCH_ENTITY :   return  -99;
             case WRONG_INPUT    :   return -100;
 
             case UUNC_VIOLATION :   return -101;

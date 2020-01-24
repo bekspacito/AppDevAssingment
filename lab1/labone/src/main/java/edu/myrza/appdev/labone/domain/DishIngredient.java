@@ -24,7 +24,7 @@ public class DishIngredient {
     @JoinColumn(name = "ingredient_id",nullable = false)
     private Ingredient ingredient;
 
-    @ManyToOne(fetch = FetchType.EAGER,optional = false)
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name = "dish_id",nullable = false)
     private Dish dish;
 

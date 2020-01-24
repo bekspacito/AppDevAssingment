@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class BadRequestException extends Exception{
+public class BadRequestException extends RuntimeException{
 
     private BadReqSubcodes subcode;
 

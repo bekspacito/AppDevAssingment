@@ -69,12 +69,12 @@ public class DishController {
     }
 
     @PostMapping("/{id}")
-    @Transactional
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody DishUpdReqBody reqBody){
 
         Dish dish = dishRepo.findById(id)
                              .orElseThrow(IllegalArgumentException::new);
 
+        //here is gonna be another query to db.
         Set<DishIngredient> currDishIngs = dish.getDishIngredients();
 
         String name  = reqBody.getName();
@@ -108,12 +108,12 @@ public class DishController {
                     Double _amount = ingData.getAmount();
 
                     currDishIngs.stream()
-                             .filter(di -> di.getId().equals(_id))
+                             .filter(di -> di.getIngredient().getId().equals(_id))
                              .findAny()
                              .ifPresent(di -> di.setAmount(_amount));
 
                 } else if (ingData.getStatus().equals("DEL")) {
-                    currDishIngs.removeIf(di -> di.getId().equals(ingData.getId()));
+                    currDishIngs.removeIf(di -> di.getIngredient().getId().equals(ingData.getId()));
                 }
             }
         }
