@@ -4,7 +4,11 @@ import edu.myrza.appdev.labone.payload.BadRequestRespBody;
 
 public enum BadReqSubcodes {
 
+    IS_NULL,
+    DELL_ALL_INGS,   // When there is an attempt ot delete all ingredients during dish update
+    ALREADY_ADDED,
     PRICE_BELOW_ZERO,
+    WRONG_AMOUNT,
     NO_SUCH_ENTITY,  // When user wants to manipulate an entity through id that doesn't exist
     WRONG_INPUT,     // When client's input data(usually it's json data) didn't make it through validation
 
@@ -24,6 +28,11 @@ public enum BadReqSubcodes {
 
     public Integer getCode(){
         switch (this){
+            case DELL_ALL_INGS  :   return  -94;
+            case ALREADY_ADDED  :   return  -95;
+            case WRONG_AMOUNT   :   return  -96;
+            case IS_NULL:           return  -97;
+            case PRICE_BELOW_ZERO:  return  -98;
             case NO_SUCH_ENTITY :   return  -99;
             case WRONG_INPUT    :   return -100;
 

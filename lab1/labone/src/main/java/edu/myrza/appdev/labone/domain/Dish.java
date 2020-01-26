@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -26,6 +27,6 @@ public class Dish {
                fetch = FetchType.LAZY,
                cascade = CascadeType.ALL,
                orphanRemoval = true)
-    private Set<DishIngredient> dishIngredients;
+    private Set<DishIngredient> dishIngredients = new HashSet<>();
 
 }

@@ -8,5 +8,7 @@ import lombok.Setter;
 public class BadRequestRespBody {
 
     private Integer code;
+    private Object identifier;
+    private String entityName;
 
 }

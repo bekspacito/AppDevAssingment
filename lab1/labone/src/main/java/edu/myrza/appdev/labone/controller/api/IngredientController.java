@@ -9,7 +9,7 @@ import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.repository.IngredientRepository;
 import edu.myrza.appdev.labone.repository.UnitRepository;
 import edu.myrza.appdev.labone.util.BadReqSubcodes;
-import edu.myrza.appdev.labone.util.BadRequestException;
+import edu.myrza.appdev.labone.util.BadReqException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -51,7 +51,7 @@ public class IngredientController {
         Long unitId  = reqBody.getUnitId();
 
         try {
-            Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_UNIT));
+            Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId,BadReqSubcodes.NO_SUCH_UNIT.getCode(),"Unit"));
 
             Ingredient newIng = new Ingredient();
             newIng.setName(name);
@@ -60,10 +60,10 @@ public class IngredientController {
 
             ingrRepository.save(newIng);
 
-        }catch (BadRequestException ex){
-            if(ex.getSubcode().equals(BadReqSubcodes.NO_SUCH_UNIT))
+        }catch (BadReqException ex){
+            if(ex.getRespBody().getCode().equals(BadReqSubcodes.NO_SUCH_UNIT.getCode()))
                 return ResponseEntity.badRequest()
-                                    .body(BadReqSubcodes.getRespBody(BadReqSubcodes.NO_SUCH_UNIT));
+                                    .body(ex.getRespBody());
         }catch (DataIntegrityViolationException ex){
             if(ex.contains(ConstraintViolationException.class)){
                 return ResponseEntity.badRequest()
@@ -98,22 +98,22 @@ public class IngredientController {
 
         try {
             if(ingrRepository.existsIngredientByName(reqBody.getName()))
-                throw new BadRequestException(BadReqSubcodes.UINC_VIOLATION);
+                throw new BadReqException(id,BadReqSubcodes.UINC_VIOLATION.getCode(),"Ingredient");
 
-            Ingredient ingToUpd = ingrRepository.findById(id).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_INGR));
+            Ingredient ingToUpd = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id,BadReqSubcodes.NO_SUCH_INGR.getCode(),"Ingredient"));
 
             if(name != null) ingToUpd.setName(name);
             if(price != null) ingToUpd.setPrice(price); //todo check if price equals to or is below zero
             if(unitId != null) {
-                Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_UNIT));
+                Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId,BadReqSubcodes.NO_SUCH_UNIT.getCode(),"Unit"));
                 ingToUpd.setUnit(unit);
             }
 
             ingrRepository.save(ingToUpd);
 
-        }catch (BadRequestException ex){
+        }catch (BadReqException ex){
 
-            return ResponseEntity.badRequest().body(BadReqSubcodes.getRespBody(ex.getSubcode()));
+            return ResponseEntity.badRequest().body(ex.getRespBody());
 
         }
 
@@ -127,12 +127,12 @@ public class IngredientController {
 
         try {
             //find and retrieve an ingredient
-            Ingredient ing = ingrRepository.findById(id).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_INGR));
+            Ingredient ing = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id,BadReqSubcodes.NO_SUCH_INGR.getCode(),"Ingredient"));
 
             resBody = convert(ing);
 
-        }catch (BadRequestException ex){
-            if(ex.getSubcode().equals(BadReqSubcodes.NO_SUCH_INGR))
+        }catch (BadReqException ex){
+            if(ex.getRespBody().getCode().equals(BadReqSubcodes.NO_SUCH_INGR.getCode()))
                     return ResponseEntity.badRequest()
                                     .body(BadReqSubcodes.getRespBody(BadReqSubcodes.NO_SUCH_INGR));
         }

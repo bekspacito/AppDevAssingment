@@ -6,7 +6,7 @@ import edu.myrza.appdev.labone.payload.unit.UnitUpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.repository.UnitRepository;
 import edu.myrza.appdev.labone.util.BadReqSubcodes;
-import edu.myrza.appdev.labone.util.BadRequestException;
+import edu.myrza.appdev.labone.util.BadReqException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -76,16 +76,16 @@ public class UnitController {
         try {
 
             if(unitRepository.existsUnitByName(reqBody.getName()))
-                throw new BadRequestException(BadReqSubcodes.UUNC_VIOLATION);
+                throw new BadReqException(reqBody.getName(),BadReqSubcodes.UUNC_VIOLATION.getCode(),"Unit");
 
-            Unit unit = unitRepository.findById(id).orElseThrow(() -> new BadRequestException(BadReqSubcodes.NO_SUCH_UNIT));
+            Unit unit = unitRepository.findById(id).orElseThrow(() -> new BadReqException(id,BadReqSubcodes.NO_SUCH_UNIT.getCode(),"Unit"));
 
             if(reqBody.getName() != null) unit.setName(reqBody.getName());
 
             unitRepository.save(unit);
 
-        }catch (BadRequestException ex){
-            return ResponseEntity.badRequest().body(BadReqSubcodes.getRespBody(ex.getSubcode()));
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
         }
 
         return ResponseEntity.ok().build();
