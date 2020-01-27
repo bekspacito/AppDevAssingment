@@ -3,7 +3,7 @@ package edu.myrza.appdev.labone.controller.api;
 import edu.myrza.appdev.labone.payload.dish.DishCrtReqBody;
 import edu.myrza.appdev.labone.payload.dish.DishUpdReqBody;
 import edu.myrza.appdev.labone.service.DishService;
-import edu.myrza.appdev.labone.util.BadReqException;
+import edu.myrza.appdev.labone.exception.BadReqException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

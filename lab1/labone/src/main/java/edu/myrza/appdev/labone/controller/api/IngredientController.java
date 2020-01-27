@@ -8,8 +8,8 @@ import edu.myrza.appdev.labone.payload.ingredient.IngUpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.repository.IngredientRepository;
 import edu.myrza.appdev.labone.repository.UnitRepository;
-import edu.myrza.appdev.labone.util.BadReqSubcodes;
-import edu.myrza.appdev.labone.util.BadReqException;
+import edu.myrza.appdev.labone.error.BadReqCodes;
+import edu.myrza.appdev.labone.exception.BadReqException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,14 +44,14 @@ public class IngredientController {
 
         if(errors.hasErrors())
             return ResponseEntity.badRequest()
-                                .body(BadReqSubcodes.getRespBody(BadReqSubcodes.WRONG_INPUT));
+                                .body(BadReqCodes.getRespBody(BadReqCodes.WRONG_INPUT));
 
         String name  = reqBody.getName();
         Double price = reqBody.getPrice();
         Long unitId  = reqBody.getUnitId();
 
         try {
-            Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId,BadReqSubcodes.NO_SUCH_UNIT.getCode(),"Unit"));
+            Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId, BadReqCodes.NO_SUCH_UNIT.getCode(),"Unit"));
 
             Ingredient newIng = new Ingredient();
             newIng.setName(name);
@@ -61,13 +61,13 @@ public class IngredientController {
             ingrRepository.save(newIng);
 
         }catch (BadReqException ex){
-            if(ex.getRespBody().getCode().equals(BadReqSubcodes.NO_SUCH_UNIT.getCode()))
+            if(ex.getRespBody().getCode().equals(BadReqCodes.NO_SUCH_UNIT.getCode()))
                 return ResponseEntity.badRequest()
                                     .body(ex.getRespBody());
         }catch (DataIntegrityViolationException ex){
             if(ex.contains(ConstraintViolationException.class)){
                 return ResponseEntity.badRequest()
-                        .body(BadReqSubcodes.getRespBody(BadReqSubcodes.UINC_VIOLATION));
+                        .body(BadReqCodes.getRespBody(BadReqCodes.UINC_VIOLATION));
             }
         }
 
@@ -98,14 +98,14 @@ public class IngredientController {
 
         try {
             if(ingrRepository.existsIngredientByName(reqBody.getName()))
-                throw new BadReqException(id,BadReqSubcodes.UINC_VIOLATION.getCode(),"Ingredient");
+                throw new BadReqException(id, BadReqCodes.UINC_VIOLATION.getCode(),"Ingredient");
 
-            Ingredient ingToUpd = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id,BadReqSubcodes.NO_SUCH_INGR.getCode(),"Ingredient"));
+            Ingredient ingToUpd = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id, BadReqCodes.NO_SUCH_INGR.getCode(),"Ingredient"));
 
             if(name != null) ingToUpd.setName(name);
             if(price != null) ingToUpd.setPrice(price); //todo check if price equals to or is below zero
             if(unitId != null) {
-                Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId,BadReqSubcodes.NO_SUCH_UNIT.getCode(),"Unit"));
+                Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId, BadReqCodes.NO_SUCH_UNIT.getCode(),"Unit"));
                 ingToUpd.setUnit(unit);
             }
 
@@ -127,14 +127,14 @@ public class IngredientController {
 
         try {
             //find and retrieve an ingredient
-            Ingredient ing = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id,BadReqSubcodes.NO_SUCH_INGR.getCode(),"Ingredient"));
+            Ingredient ing = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id, BadReqCodes.NO_SUCH_INGR.getCode(),"Ingredient"));
 
             resBody = convert(ing);
 
         }catch (BadReqException ex){
-            if(ex.getRespBody().getCode().equals(BadReqSubcodes.NO_SUCH_INGR.getCode()))
+            if(ex.getRespBody().getCode().equals(BadReqCodes.NO_SUCH_INGR.getCode()))
                     return ResponseEntity.badRequest()
-                                    .body(BadReqSubcodes.getRespBody(BadReqSubcodes.NO_SUCH_INGR));
+                                    .body(BadReqCodes.getRespBody(BadReqCodes.NO_SUCH_INGR));
         }
 
         return ResponseEntity.ok(resBody);

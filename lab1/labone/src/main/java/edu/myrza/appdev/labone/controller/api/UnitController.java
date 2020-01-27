@@ -5,8 +5,8 @@ import edu.myrza.appdev.labone.payload.unit.UnitCreateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitUpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.repository.UnitRepository;
-import edu.myrza.appdev.labone.util.BadReqSubcodes;
-import edu.myrza.appdev.labone.util.BadReqException;
+import edu.myrza.appdev.labone.error.BadReqCodes;
+import edu.myrza.appdev.labone.exception.BadReqException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -37,7 +37,7 @@ public class UnitController {
 
         if(errors.hasErrors())
             return ResponseEntity.badRequest()
-                                .body(BadReqSubcodes.getRespBody(BadReqSubcodes.WRONG_INPUT));
+                                .body(BadReqCodes.getRespBody(BadReqCodes.WRONG_INPUT));
 
         Unit unit = new Unit();
         unit.setName(reqBody.getName());
@@ -47,7 +47,7 @@ public class UnitController {
         }catch (DataIntegrityViolationException ex){
             if(ex.contains(ConstraintViolationException.class)){
                 return ResponseEntity.badRequest()
-                        .body(BadReqSubcodes.getRespBody(BadReqSubcodes.UUNC_VIOLATION));
+                        .body(BadReqCodes.getRespBody(BadReqCodes.UUNC_VIOLATION));
             }
         }
 
@@ -76,9 +76,9 @@ public class UnitController {
         try {
 
             if(unitRepository.existsUnitByName(reqBody.getName()))
-                throw new BadReqException(reqBody.getName(),BadReqSubcodes.UUNC_VIOLATION.getCode(),"Unit");
+                throw new BadReqException(reqBody.getName(), BadReqCodes.UUNC_VIOLATION.getCode(),"Unit");
 
-            Unit unit = unitRepository.findById(id).orElseThrow(() -> new BadReqException(id,BadReqSubcodes.NO_SUCH_UNIT.getCode(),"Unit"));
+            Unit unit = unitRepository.findById(id).orElseThrow(() -> new BadReqException(id, BadReqCodes.NO_SUCH_UNIT.getCode(),"Unit"));
 
             if(reqBody.getName() != null) unit.setName(reqBody.getName());
 
