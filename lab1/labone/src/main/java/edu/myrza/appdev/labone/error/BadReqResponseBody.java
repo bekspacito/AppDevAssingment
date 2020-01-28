@@ -39,8 +39,12 @@ public class BadReqResponseBody {
             return this;
         }
 
-        public Builder fieldError(FieldErrorCodes fieldErrorCode,String fieldName){
+        public Builder fieldError(FieldErrorCodes fieldErrorCode){
             payload.put("fieldError",fieldErrorCode.getCode());
+            return this;
+        }
+
+        public Builder fieldName(String fieldName){
             payload.put("fieldName",fieldName);
             return this;
         }

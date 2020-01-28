@@ -1,6 +1,7 @@
 package edu.myrza.appdev.labone.controller.api;
 
 import edu.myrza.appdev.labone.domain.Unit;
+import edu.myrza.appdev.labone.error.BadReqResponseBody;
 import edu.myrza.appdev.labone.payload.unit.UnitCreateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitUpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -75,10 +77,23 @@ public class UnitController {
 
         try {
 
-            if(unitRepository.existsUnitByName(reqBody.getName()))
-                throw new BadReqException(reqBody.getName(), BadReqCodes.UUNC_VIOLATION.getCode(),"Unit");
+            if(unitRepository.existsUnitByName(reqBody.getName())){
+                BadReqResponseBody resp = new BadReqResponseBody.Builder(BadReqCodes.UUNC_VIOLATION)
+                                                                .identifier(reqBody.getName())
+                                                                .entity("Unit")
+                                                                .build();
 
-            Unit unit = unitRepository.findById(id).orElseThrow(() -> new BadReqException(id, BadReqCodes.NO_SUCH_UNIT.getCode(),"Unit"));
+                throw new BadReqException(resp);
+            }
+
+            Unit unit = unitRepository.findById(id).orElseThrow(() -> {
+                BadReqResponseBody resp = new BadReqResponseBody.Builder(BadReqCodes.NO_SUCH_UNIT)
+                                                                .identifier(id)
+                                                                .entity("Unit")
+                                                                .build();
+
+                return new BadReqException(resp);
+            });
 
             if(reqBody.getName() != null) unit.setName(reqBody.getName());
 

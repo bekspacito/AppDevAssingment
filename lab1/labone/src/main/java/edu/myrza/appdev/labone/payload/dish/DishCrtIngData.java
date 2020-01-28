@@ -4,6 +4,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+
 
 //todo set validation annotations
 
@@ -12,6 +16,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class DishCrtIngData {
+
+    @NotNull(message = "Ingredient id cannot be null")
     private Long id; //ingredient id
-    private Double amount;
+
+    @DecimalMin(value = "0.0",inclusive = true,message = "amount must be above or equal to zero")
+    private BigDecimal amount;
+
 }
