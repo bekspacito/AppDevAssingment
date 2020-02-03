@@ -9,6 +9,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name = "dish",uniqueConstraints = {
+        @UniqueConstraint(name = "DISH_UNIQUE_NAME",columnNames = "name")
+})
 @Setter
 @Getter
 @NoArgsConstructor
@@ -18,7 +21,7 @@ public class Dish {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(unique = true)
+    @Column(name = "name")
     private String name;
 
     private Double price;

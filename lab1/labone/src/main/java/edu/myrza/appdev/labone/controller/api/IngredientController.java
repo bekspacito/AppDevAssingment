@@ -2,26 +2,23 @@ package edu.myrza.appdev.labone.controller.api;
 
 import edu.myrza.appdev.labone.domain.Ingredient;
 import edu.myrza.appdev.labone.domain.Unit;
-import edu.myrza.appdev.labone.payload.ingredient.IngCreateReqBody;
-import edu.myrza.appdev.labone.payload.ingredient.IngFindResBody;
-import edu.myrza.appdev.labone.payload.ingredient.IngUpdateReqBody;
+import edu.myrza.appdev.labone.error.BadReqResponseBody;
+import edu.myrza.appdev.labone.error.api.ingredient.create.IngredientCreateError;
+import edu.myrza.appdev.labone.error.api.ingredient.update.IngredientUpdateError;
+import edu.myrza.appdev.labone.payload.ingredient.CreateReqBody;
+import edu.myrza.appdev.labone.payload.ingredient.FindRespBody;
+import edu.myrza.appdev.labone.payload.ingredient.UpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
-import edu.myrza.appdev.labone.repository.IngredientRepository;
-import edu.myrza.appdev.labone.repository.UnitRepository;
 import edu.myrza.appdev.labone.error.BadReqCodes;
 import edu.myrza.appdev.labone.exception.BadReqException;
+import edu.myrza.appdev.labone.service.IngredientService;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import java.lang.annotation.Annotation;
+import javax.validation.Payload;
+import javax.validation.Validator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -30,155 +27,165 @@ import java.util.stream.StreamSupport;
 @RequestMapping("/api/ingredient")
 public class IngredientController {
 
-//    private IngredientRepository ingrRepository;
-//    private UnitRepository       unitRepository;
-//
-//    @Autowired
-//    public IngredientController(IngredientRepository ingrRepository,
-//                                UnitRepository unitRepository)
-//    {
-//        this.ingrRepository = ingrRepository;
-//        this.unitRepository = unitRepository;
-//    }
-//
-//    @PostMapping
-//    public ResponseEntity<?> create(@Valid @RequestBody IngCreateReqBody reqBody, Errors errors){
-//
-//        if(errors.hasErrors())
-//            return ResponseEntity.badRequest()
-//                                .body(BadReqCodes.getRespBody(BadReqCodes.WRONG_INPUT));
-//
-//        String name  = reqBody.getName();
-//        Double price = reqBody.getPrice();
-//        Long unitId  = reqBody.getUnitId();
-//
-//        try {
-//            Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId, BadReqCodes.NO_SUCH_UNIT.getCode(),"Unit"));
-//
-//            Ingredient newIng = new Ingredient();
-//            newIng.setName(name);
-//            newIng.setPrice(price); //todo check if price equals to or is below zero
-//            newIng.setUnit(unit);
-//
-//            ingrRepository.save(newIng);
-//
-//        }catch (BadReqException ex){
-//            if(ex.getRespBody().getCode().equals(BadReqCodes.NO_SUCH_UNIT.getCode()))
-//                return ResponseEntity.badRequest()
-//                                    .body(ex.getRespBody());
-//        }catch (DataIntegrityViolationException ex){
-//            if(ex.contains(ConstraintViolationException.class)){
-//                return ResponseEntity.badRequest()
-//                        .body(BadReqCodes.getRespBody(BadReqCodes.UINC_VIOLATION));
-//            }
-//        }
-//
-//        return ResponseEntity.ok().build();
-//    }
-//
-//
-//    @DeleteMapping("/{id}")
-//    @Transactional
-//    public ResponseEntity<?> deleteById(@PathVariable Long id){
-//        try{
-//            ingrRepository.deleteById(id);
-//        }catch (EmptyResultDataAccessException ex){
-//            //this exception is thrown when we try to delete an entity that doesn't exits
-//            //do nothing
-//        }
-//
-//        return ResponseEntity.ok().build();
-//    }
-//
-//    @PostMapping("/{id}")
-//    @Transactional
-//    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody IngUpdateReqBody reqBody){
-//
-//        String name  = reqBody.getName();
-//        Double price = reqBody.getPrice();
-//        Long unitId  = reqBody.getUnitId();
-//
-//        try {
-//            if(ingrRepository.existsIngredientByName(reqBody.getName()))
-//                throw new BadReqException(id, BadReqCodes.UINC_VIOLATION.getCode(),"Ingredient");
-//
-//            Ingredient ingToUpd = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id, BadReqCodes.NO_SUCH_INGR.getCode(),"Ingredient"));
-//
-//            if(name != null) ingToUpd.setName(name);
-//            if(price != null) ingToUpd.setPrice(price); //todo check if price equals to or is below zero
-//            if(unitId != null) {
-//                Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new BadReqException(unitId, BadReqCodes.NO_SUCH_UNIT.getCode(),"Unit"));
-//                ingToUpd.setUnit(unit);
-//            }
-//
-//            ingrRepository.save(ingToUpd);
-//
-//        }catch (BadReqException ex){
-//
-//            return ResponseEntity.badRequest().body(ex.getRespBody());
-//
-//        }
-//
-//        return ResponseEntity.ok().build();
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<?> findById(@PathVariable Long id){
-//
-//        IngFindResBody resBody = null;
-//
-//        try {
-//            //find and retrieve an ingredient
-//            Ingredient ing = ingrRepository.findById(id).orElseThrow(() -> new BadReqException(id, BadReqCodes.NO_SUCH_INGR.getCode(),"Ingredient"));
-//
-//            resBody = convert(ing);
-//
-//        }catch (BadReqException ex){
-//            if(ex.getRespBody().getCode().equals(BadReqCodes.NO_SUCH_INGR.getCode()))
-//                    return ResponseEntity.badRequest()
-//                                    .body(BadReqCodes.getRespBody(BadReqCodes.NO_SUCH_INGR));
-//        }
-//
-//        return ResponseEntity.ok(resBody);
-//    }
-//
-//    @GetMapping("/pname/{partname}")
-//    public ResponseEntity<?> findByPartName(@PathVariable String partname){
-//        final String key = "%" + partname + "%";
-//
-//        List<IngFindResBody> resp = ingrRepository.findByNameLike(key).stream()
-//                                                    .map(IngredientController::convert)
-//                                                    .collect(Collectors.toList());
-//
-//        return ResponseEntity.ok(resp);
-//    }
-//
-//    @GetMapping("/all")
-//    public ResponseEntity<?> findAll(){
-//        List<IngFindResBody> resp = StreamSupport.stream(ingrRepository.findAll().spliterator(),false)
-//                                                    .map(IngredientController::convert)
-//                                                    .collect(Collectors.toList());
-//
-//        return ResponseEntity.ok(resp);
-//    }
-//
-//    private static IngFindResBody convert(Ingredient ing){
-//
-//        IngFindResBody result = new IngFindResBody();
-//
-//        Unit unit = ing.getUnit();
-//
-//        //get unit ready
-//        UnitRespBody unitRespBody = new UnitRespBody();
-//        unitRespBody.setId(unit.getId());
-//        unitRespBody.setName(unit.getName());
-//
-//        result.setId(ing.getId());
-//        result.setName(ing.getName());
-//        result.setPrice(ing.getPrice());
-//        result.setUnit(unitRespBody);
-//
-//        return result;
-//    }
+    private Validator            validator;
+    private IngredientService    ingService;
+
+    @Autowired
+    public IngredientController(Validator validator,
+                                IngredientService ingService)
+    {
+        this.validator = validator;
+        this.ingService = ingService;
+    }
+
+    @PostMapping
+    public ResponseEntity<?> create(@RequestBody CreateReqBody reqBody){
+
+        //validation
+        List<Object> errors = validator.validate(reqBody)
+                 .stream()
+                 .flatMap(cv -> cv.getConstraintDescriptor().getPayload().stream())
+                 .map(p -> processError(p,reqBody))
+                 .collect(Collectors.toList());
+
+        if(errors.size() > 0)
+            return ResponseEntity.badRequest().body(errors.get(0));
+
+        try {
+
+            ingService.save(reqBody);
+
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
+        }catch (ConstraintViolationException cvex){
+               if(cvex.getConstraintName().contains("ING_UNIQUE_NAME")){
+                    BadReqResponseBody body = new BadReqResponseBody.Builder(BadReqCodes.UINC_VIOLATION)
+                                                                .identifier(reqBody.getName())
+                                                                .build();
+                    return ResponseEntity.badRequest().body(body);
+               }
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable Long id){
+
+        try{
+            ingService.delete(id);
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UpdateReqBody reqBody){
+
+        //validation
+        List<Object> errors = validator.validate(reqBody)
+                .stream()
+                .flatMap(cv -> cv.getConstraintDescriptor().getPayload().stream())
+                .map(p -> processError(p,reqBody))
+                .collect(Collectors.toList());
+
+        if(errors.size() > 0)
+            return ResponseEntity.badRequest().body(errors.get(0));
+
+        try {
+
+            ingService.update(id,reqBody);
+
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
+        }catch (ConstraintViolationException cvex){
+            if(cvex.getConstraintName().contains("ING_UNIQUE_NAME")){
+                BadReqResponseBody resp = new BadReqResponseBody.Builder(BadReqCodes.UINC_VIOLATION)
+                        .identifier(reqBody.getName())
+                        .build();
+                return ResponseEntity.badRequest().body(resp);
+            }
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> findById(@PathVariable Long id){
+
+        FindRespBody resBody = null;
+
+        try {
+            resBody = convert(ingService.findById(id));
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
+        }
+
+        return ResponseEntity.ok(resBody);
+    }
+
+    @GetMapping("/pname/{partname}")
+    public ResponseEntity<?> findByPartName(@PathVariable String partname){
+        List<FindRespBody> resp = StreamSupport.stream(ingService.findByPartName(partname).spliterator(),false)
+                                                    .map(IngredientController::convert)
+                                                    .collect(Collectors.toList());
+        return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> findAll(){
+        List<FindRespBody> resp = StreamSupport.stream(ingService.findAll().spliterator(),false)
+                                                    .map(IngredientController::convert)
+                                                    .collect(Collectors.toList());
+
+        return ResponseEntity.ok(resp);
+    }
+
+    private static Object processError(Class<? extends Payload> p, CreateReqBody reqBody){
+        try {
+            if (IngredientCreateError.class.isAssignableFrom(p)) {
+                IngredientCreateError handler = (IngredientCreateError) p.newInstance();
+                return handler.onError(reqBody);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        throw new RuntimeException("No handler is found...");
+    }
+
+    private static Object processError(Class<? extends Payload> p,UpdateReqBody reqBody){
+        try {
+            if (IngredientUpdateError.class.isAssignableFrom(p)) {
+                IngredientUpdateError handler = (IngredientUpdateError) p.newInstance();
+                return handler.onError(reqBody);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        throw new RuntimeException("No handler is found...");
+    }
+
+    private static FindRespBody convert(Ingredient ing){
+
+        FindRespBody result = new FindRespBody();
+
+        Unit unit = ing.getUnit();
+
+        //get unit ready
+        UnitRespBody unitRespBody = new UnitRespBody();
+        unitRespBody.setId(unit.getId());
+        unitRespBody.setName(unit.getName());
+
+        //get ingredient ready
+        result.setId(ing.getId());
+        result.setName(ing.getName());
+        result.setPrice(ing.getPrice());
+        result.setUnit(unitRespBody);
+
+        return result;
+    }
 
 }

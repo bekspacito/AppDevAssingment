@@ -1,8 +1,7 @@
 package edu.myrza.appdev.labone.controller.api;
 
-import edu.myrza.appdev.labone.error.BadReqCodes;
-import edu.myrza.appdev.labone.error.BadReqResponseBody;
-import edu.myrza.appdev.labone.error.FieldErrorCodes;
+import edu.myrza.appdev.labone.error.api.dish.create.DishCreateError;
+import edu.myrza.appdev.labone.error.api.dish.update.DishUpdateError;
 import edu.myrza.appdev.labone.payload.dish.CreateReqBody;
 import edu.myrza.appdev.labone.payload.dish.UpdateReqBody;
 import edu.myrza.appdev.labone.service.DishService;
@@ -11,12 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.ConstraintViolation;
+import javax.validation.Payload;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.constraints.NotBlank;
-import java.lang.annotation.Annotation;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -37,26 +34,20 @@ public class DishController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CreateReqBody reqBody){
 
+         List errors = validator.validate(reqBody)
+                             .stream()
+                             .flatMap(cv -> cv.getConstraintDescriptor().getPayload().stream())
+                             .map(p -> processError(p,reqBody))
+                             .collect(Collectors.toList());
 
-        //validate name
-        for(ConstraintViolation<CreateReqBody> cv : validator.validateProperty(reqBody,"name")){
-            Class<?> constraint = cv.getConstraintDescriptor().getAnnotation().annotationType();
-            if(constraint.equals(NotBlank.class)){
-                BadReqResponseBody respBody = new BadReqResponseBody.Builder(BadReqCodes.FIELD_ERROR)
-                                                                    .fieldError(FieldErrorCodes.DISH_NAME_REQUIRED)
-                                                                    .build();
+         if(errors.size() > 0)
+             return ResponseEntity.badRequest().body(errors);
 
-                return ResponseEntity.badRequest().body(respBody);
-            }
+        try{
+            dishService.create(reqBody);
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
         }
-
-
-
-//        try{
-//            //dishService.create(reqBody);
-//        }catch (BadReqException ex){
-//            return ResponseEntity.badRequest().body(ex.getRespBody());
-//        }
 
         return ResponseEntity.ok().build();
     }
@@ -64,11 +55,21 @@ public class DishController {
     @PostMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UpdateReqBody reqBody){
 
-        try {
-            //dishService.update(id,reqBody);
-        }catch (BadReqException ex){
-            return ResponseEntity.badRequest().body(ex.getRespBody());
-        }
+        List errors = validator.validate(reqBody)
+                .stream()
+                .flatMap(cv -> cv.getConstraintDescriptor().getPayload().stream())
+                .map(p -> processError(p,reqBody))
+                .collect(Collectors.toList());
+
+        if(errors.size() > 0)
+            return ResponseEntity.badRequest().body(errors);
+
+
+//        try {
+//            dishService.update(id,reqBody);
+//        }catch (BadReqException ex){
+//            return ResponseEntity.badRequest().body(ex.getRespBody());
+//        }
 
         return ResponseEntity.ok().build();
     }
@@ -84,5 +85,31 @@ public class DishController {
 
     @GetMapping("/all")
     public ResponseEntity<?> findAll(){ return null; }
+
+    private static Object processError(Class<? extends Payload> p,CreateReqBody reqBody){
+        try {
+            if (DishCreateError.class.isAssignableFrom(p)) {
+                DishCreateError handler = (DishCreateError) p.newInstance();
+                return handler.onError(reqBody);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private static Object processError(Class<? extends Payload> p,UpdateReqBody reqBody){
+        try {
+            if (DishUpdateError.class.isAssignableFrom(p)) {
+                DishUpdateError handler = (DishUpdateError) p.newInstance();
+                return handler.onError(reqBody);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
 
 }

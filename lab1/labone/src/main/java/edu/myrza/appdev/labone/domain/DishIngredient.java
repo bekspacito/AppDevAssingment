@@ -6,11 +6,10 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
-@Table(
-    uniqueConstraints =
-        @UniqueConstraint(columnNames={"ingredient_id","dish_id"}) //make combination unique
-)
 @Entity
+@Table(
+    uniqueConstraints = @UniqueConstraint(name = "ING_DISH_UNIQUE",columnNames={"ingredient_id","dish_id"}) //make combination unique
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,7 +20,7 @@ public class DishIngredient {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER,optional = false)
-    @JoinColumn(name = "ingredient_id",nullable = false)
+    @JoinColumn(name = "ingredient_id",foreignKey = @ForeignKey(name = "FK_DISH_ING_ING"),nullable = false)
     private Ingredient ingredient;
 
     @ManyToOne(fetch = FetchType.LAZY,optional = false)

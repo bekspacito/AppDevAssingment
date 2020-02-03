@@ -2,11 +2,11 @@ package edu.myrza.appdev.labone.error;
 
 public enum BadReqCodes {
 
-    WRONG_INPUT,        // When client's input data(usually it's json data) didn't make it through validation
     UUNC_VIOLATION,     // Unique unit name constraint violation
     NO_SUCH_UNIT,       // No such unit with that id exist
     UINC_VIOLATION,     // Unique ingredient name constraint violation
     NO_SUCH_INGR,       // No such ingredient with that id exist
+    UNIT_IS_IN_USE,     // When we try to delete a unit that is used by ingredients
 
     NO_SUCH_ENTITY,     // When user wants to manipulate an entity through id that doesn't exist
     DUPLICATE_ENTITIES, // When there is a collection of entities and the collection has duplicate elements
@@ -19,7 +19,8 @@ public enum BadReqCodes {
 
     // When there is an attempt to remove all ingredients from a dish during dish data update.Which is wrong
     // It's ING and not ENTITY because the error is really specific and could happen only in one place in the app
-    NO_ING_DISH;
+    NO_ING_DISH,
+    ING_IS_IN_USE;
 
 
 
@@ -30,7 +31,7 @@ public enum BadReqCodes {
     public Integer getCode(){
         switch (this){
             case NO_SUCH_ENTITY :   return -100;
-            case WRONG_INPUT    :   return -101;
+            case UNIT_IS_IN_USE:    return -101;
 
             case UUNC_VIOLATION :   return -102;
             case NO_SUCH_UNIT   :   return -103;
@@ -43,6 +44,7 @@ public enum BadReqCodes {
             case UNIQUE_ENTITY  :   return -108;
             case DUPLICATE_ENTITIES:return -109;
             case ALREADY_ADDED:     return -110;
+            case ING_IS_IN_USE:     return -111;
 
             default : throw new IllegalArgumentException("NO SUCH BAD REQUEST CODE");
         }

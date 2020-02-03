@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class IngFindResBody {
+public class FindRespBody {
 
     private Long id;
     private String name;

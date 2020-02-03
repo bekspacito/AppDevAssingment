@@ -9,6 +9,9 @@ import java.util.Set;
 
 
 @Entity
+@Table(
+        uniqueConstraints = @UniqueConstraint(name = "UNIT_UNIQUE_NAME",columnNames = {"name"})
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,7 +21,7 @@ public class Unit {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(unique = true)
+    @Column
     private String name;
 
     @OneToMany(mappedBy = "unit",fetch = FetchType.LAZY)

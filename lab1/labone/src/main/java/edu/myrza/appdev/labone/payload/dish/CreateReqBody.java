@@ -1,9 +1,14 @@
 package edu.myrza.appdev.labone.payload.dish;
 
+import edu.myrza.appdev.labone.error.api.IdNullError;
+import edu.myrza.appdev.labone.error.api.NameError;
+import edu.myrza.appdev.labone.error.api.PriceError;
+import edu.myrza.appdev.labone.error.api.dish.create.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.Valid;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -18,14 +23,15 @@ import java.util.Set;
 @NoArgsConstructor
 public class CreateReqBody {
 
-    @NotBlank
+    @NotBlank(payload = NameError.class)
     private String name;
 
-    @DecimalMin(value = "0.0",inclusive = true)
+    @DecimalMin(value = "0.0",inclusive = true,payload = PriceError.class)
     private BigDecimal price;
 
-    @NotNull
-    @Size
+    @NotNull(payload = IngCollecError.class)
+    @Size(min = 1,payload = IngCollecError.class)
+    @Valid
     private Set<IngredientData> ingredients;
 
     @Getter
@@ -33,13 +39,12 @@ public class CreateReqBody {
     @NoArgsConstructor
     public static class IngredientData {
 
-        @NotNull
+        @NotNull(payload = IdNullError.class)
         private Long id; //ingredient id
 
-        @DecimalMin(value = "0.0",inclusive = true)
+        @DecimalMin(value = "0.0",inclusive = true,payload = IngAmountError.class)
         private BigDecimal amount;
 
-        //todo implement equals and hashcode
     }
 
 }
