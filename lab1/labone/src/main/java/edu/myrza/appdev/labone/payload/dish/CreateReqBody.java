@@ -26,7 +26,7 @@ public class CreateReqBody {
     @NotBlank(payload = NameError.class)
     private String name;
 
-    @DecimalMin(value = "0.0",inclusive = true,payload = PriceError.class)
+    @DecimalMin(value = "0.0",payload = PriceError.class)
     private BigDecimal price;
 
     @NotNull(payload = IngCollecError.class)

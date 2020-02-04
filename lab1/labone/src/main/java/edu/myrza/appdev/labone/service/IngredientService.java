@@ -1,13 +1,11 @@
 package edu.myrza.appdev.labone.service;
 
-import edu.myrza.appdev.labone.controller.api.IngredientController;
 import edu.myrza.appdev.labone.domain.Ingredient;
 import edu.myrza.appdev.labone.domain.Unit;
 import edu.myrza.appdev.labone.error.BadReqCodes;
 import edu.myrza.appdev.labone.error.BadReqResponseBody;
 import edu.myrza.appdev.labone.exception.BadReqException;
 import edu.myrza.appdev.labone.payload.ingredient.CreateReqBody;
-import edu.myrza.appdev.labone.payload.ingredient.FindRespBody;
 import edu.myrza.appdev.labone.payload.ingredient.UpdateReqBody;
 import edu.myrza.appdev.labone.repository.IngredientRepository;
 import org.hibernate.exception.ConstraintViolationException;
@@ -15,9 +13,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class IngredientService {

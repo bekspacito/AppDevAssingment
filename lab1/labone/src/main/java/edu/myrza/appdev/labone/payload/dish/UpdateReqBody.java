@@ -27,12 +27,15 @@ import java.util.Set;
 @NoArgsConstructor
 public class UpdateReqBody {
 
-    @NotNull(payload = NameError.class)
     private String name; //new name for a dish
 
     private BigDecimal price;
 
     private Set<IngredientData> ingredients;
+
+    public Optional<@NotNull(payload = NameError.class) String> getName(){
+        return Optional.ofNullable(name);
+    }
 
     public Optional<@DecimalMin(value = "0.0",payload = PriceError.class) BigDecimal> getPrice(){
         return Optional.ofNullable(price);

@@ -6,7 +6,7 @@ import edu.myrza.appdev.labone.error.BadReqResponseBody;
 import edu.myrza.appdev.labone.error.api.ingredient.create.IngredientCreateError;
 import edu.myrza.appdev.labone.error.api.ingredient.update.IngredientUpdateError;
 import edu.myrza.appdev.labone.payload.ingredient.CreateReqBody;
-import edu.myrza.appdev.labone.payload.ingredient.FindRespBody;
+import edu.myrza.appdev.labone.payload.ingredient.FindIngRespBody;
 import edu.myrza.appdev.labone.payload.ingredient.UpdateReqBody;
 import edu.myrza.appdev.labone.payload.unit.UnitRespBody;
 import edu.myrza.appdev.labone.error.BadReqCodes;
@@ -114,7 +114,7 @@ public class IngredientController {
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id){
 
-        FindRespBody resBody = null;
+        FindIngRespBody resBody = null;
 
         try {
             resBody = convert(ingService.findById(id));
@@ -127,7 +127,7 @@ public class IngredientController {
 
     @GetMapping("/pname/{partname}")
     public ResponseEntity<?> findByPartName(@PathVariable String partname){
-        List<FindRespBody> resp = StreamSupport.stream(ingService.findByPartName(partname).spliterator(),false)
+        List<FindIngRespBody> resp = StreamSupport.stream(ingService.findByPartName(partname).spliterator(),false)
                                                     .map(IngredientController::convert)
                                                     .collect(Collectors.toList());
         return ResponseEntity.ok(resp);
@@ -135,7 +135,7 @@ public class IngredientController {
 
     @GetMapping("/all")
     public ResponseEntity<?> findAll(){
-        List<FindRespBody> resp = StreamSupport.stream(ingService.findAll().spliterator(),false)
+        List<FindIngRespBody> resp = StreamSupport.stream(ingService.findAll().spliterator(),false)
                                                     .map(IngredientController::convert)
                                                     .collect(Collectors.toList());
 
@@ -168,9 +168,9 @@ public class IngredientController {
         throw new RuntimeException("No handler is found...");
     }
 
-    private static FindRespBody convert(Ingredient ing){
+    private static FindIngRespBody convert(Ingredient ing){
 
-        FindRespBody result = new FindRespBody();
+        FindIngRespBody result = new FindIngRespBody();
 
         Unit unit = ing.getUnit();
 

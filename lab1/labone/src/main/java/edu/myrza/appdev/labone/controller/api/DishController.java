@@ -3,6 +3,7 @@ package edu.myrza.appdev.labone.controller.api;
 import edu.myrza.appdev.labone.error.api.dish.create.DishCreateError;
 import edu.myrza.appdev.labone.error.api.dish.update.DishUpdateError;
 import edu.myrza.appdev.labone.payload.dish.CreateReqBody;
+import edu.myrza.appdev.labone.payload.dish.FindDishRespBody;
 import edu.myrza.appdev.labone.payload.dish.UpdateReqBody;
 import edu.myrza.appdev.labone.service.DishService;
 import edu.myrza.appdev.labone.exception.BadReqException;
@@ -62,29 +63,51 @@ public class DishController {
                 .collect(Collectors.toList());
 
         if(errors.size() > 0)
-            return ResponseEntity.badRequest().body(errors);
+            return ResponseEntity.badRequest().body(errors.get(0));
 
 
-//        try {
-//            dishService.update(id,reqBody);
-//        }catch (BadReqException ex){
-//            return ResponseEntity.badRequest().body(ex.getRespBody());
-//        }
+        try {
+            dishService.update(id,reqBody);
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
+        }
 
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id){ return null; }
+    public ResponseEntity<?> delete(@PathVariable Long id){
+        dishService.delete(id);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id){ return null; }
+    public ResponseEntity<?> findById(@PathVariable Long id){
+
+        FindDishRespBody resBody = null;
+
+        try {
+            resBody = dishService.findById(id);
+        }catch (BadReqException ex){
+            return ResponseEntity.badRequest().body(ex.getRespBody());
+        }
+
+        return ResponseEntity.ok(resBody);
+    }
 
     @GetMapping("/pname/{partname}")
-    public ResponseEntity<?> findByPartName(@PathVariable String partname){ return null; }
+    public ResponseEntity<?> findByPartName(@PathVariable String partname){
+        List<FindDishRespBody> res = dishService.findByPartname(partname);
+
+        return ResponseEntity.ok(res);
+    }
 
     @GetMapping("/all")
-    public ResponseEntity<?> findAll(){ return null; }
+    public ResponseEntity<?> findAll(){
+        List<FindDishRespBody> res = dishService.findAll();
+
+        return ResponseEntity.ok(res);
+    }
 
     private static Object processError(Class<? extends Payload> p,CreateReqBody reqBody){
         try {
