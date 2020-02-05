@@ -55,7 +55,6 @@ public class UnitService {
         unit.setName(reqBody.getName());
     }
 
-    @Transactional
     public void delete(Long id){
         try{
             unitRepository.deleteById(id);

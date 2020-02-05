@@ -1,5 +1,7 @@
 package edu.myrza.appdev.labone.controller.api;
 
+import edu.myrza.appdev.labone.error.BadReqCodes;
+import edu.myrza.appdev.labone.error.BadReqResponseBody;
 import edu.myrza.appdev.labone.error.api.dish.create.DishCreateError;
 import edu.myrza.appdev.labone.error.api.dish.update.DishUpdateError;
 import edu.myrza.appdev.labone.payload.dish.CreateReqBody;
@@ -7,13 +9,18 @@ import edu.myrza.appdev.labone.payload.dish.FindDishRespBody;
 import edu.myrza.appdev.labone.payload.dish.UpdateReqBody;
 import edu.myrza.appdev.labone.service.DishService;
 import edu.myrza.appdev.labone.exception.BadReqException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import javax.validation.Payload;
 import javax.validation.Validator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -70,6 +77,39 @@ public class DishController {
             dishService.update(id,reqBody);
         }catch (BadReqException ex){
             return ResponseEntity.badRequest().body(ex.getRespBody());
+        }catch (DataIntegrityViolationException ex){
+            if(ConstraintViolationException.class.isAssignableFrom(ex.getCause().getClass())) {
+                ConstraintViolationException cve = (ConstraintViolationException) ex.getCause();
+                String cveName = cve.getConstraintName();
+
+                //is thrown when duplicate ingredients come
+                if (cveName.contains("ING_DISH_UNIQUE")) {
+                    BadReqResponseBody body = reqBody.getIngredients().stream()
+                            .collect(Collectors.groupingBy(UpdateReqBody.IngredientData::getId, Collectors.counting()))
+                            .entrySet().stream()
+                            .filter(es -> es.getValue() > 1)
+                            .findFirst()
+                            .map(di -> new BadReqResponseBody.Builder(BadReqCodes.DUPLICATE_ENTITIES)
+                                            .identifier(di.getKey())
+                                            .build()
+                            )
+                            //when we try to add an ingredient that is already in list of ingredients
+                            //todo we cannot say what ingredient is exactly has been tried to be added
+                            .orElseGet(() -> new BadReqResponseBody.Builder(BadReqCodes.ALREADY_ADDED)
+                                            .build()
+                            );
+
+                    return ResponseEntity.badRequest().body(body);
+                }
+                if (cveName.contains("DISH_UNIQUE_NAME")) {
+                    BadReqResponseBody body = new BadReqResponseBody.Builder(BadReqCodes.UNIQUE_ENTITY)
+                            .identifier(reqBody.getName())
+                            .build();
+
+                    return ResponseEntity.badRequest().body(body);
+                }
+            }
+
         }
 
         return ResponseEntity.ok().build();

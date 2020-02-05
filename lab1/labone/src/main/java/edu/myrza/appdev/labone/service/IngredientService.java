@@ -59,7 +59,6 @@ public class IngredientService {
 
     }
 
-    @Transactional
     public void delete(Long id){
 
         try{

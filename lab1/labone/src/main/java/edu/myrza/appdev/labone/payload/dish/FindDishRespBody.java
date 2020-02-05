@@ -15,6 +15,16 @@ public class FindDishRespBody {
     private Long id;
     private String name;
     private Double price;
-    private List<FindIngRespBody> ingredients;
+    private List<IngredientData> ingredients;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class IngredientData{
+
+        private Double amount;
+        private FindIngRespBody ingredient;
+
+    }
 
 }

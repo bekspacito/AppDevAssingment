@@ -5,8 +5,10 @@ import edu.myrza.appdev.labone.error.api.NameError;
 import edu.myrza.appdev.labone.error.api.PriceError;
 import edu.myrza.appdev.labone.error.api.dish.annotation.IngAmountConstraint;
 import edu.myrza.appdev.labone.error.api.dish.annotation.IngIdConstraint;
+import edu.myrza.appdev.labone.error.api.dish.annotation.NullOrNotEmpty;
 import edu.myrza.appdev.labone.error.api.dish.annotation.StatusConstraint;
 import edu.myrza.appdev.labone.error.api.dish.annotation.groupsequence.IngStatusInfo;
+import edu.myrza.appdev.labone.error.api.dish.create.IngAmountError;
 import edu.myrza.appdev.labone.error.api.dish.update.StatusBlankError;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +16,7 @@ import lombok.Setter;
 
 import javax.validation.GroupSequence;
 import javax.validation.Valid;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import javax.validation.groups.Default;
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -27,22 +28,20 @@ import java.util.Set;
 @NoArgsConstructor
 public class UpdateReqBody {
 
+    @NullOrNotEmpty(payload = NameError.class)
     private String name; //new name for a dish
 
     private BigDecimal price;
 
-    private Set<IngredientData> ingredients;
+    @Valid
+    private Set<IngredientData> ingredients = new HashSet<>();
 
-    public Optional<@NotNull(payload = NameError.class) String> getName(){
+    public Optional<String> getName(){
         return Optional.ofNullable(name);
     }
 
     public Optional<@DecimalMin(value = "0.0",payload = PriceError.class) BigDecimal> getPrice(){
         return Optional.ofNullable(price);
-    }
-
-    public Optional<Set<@Valid IngredientData>> getIngredients(){
-        return Optional.ofNullable(ingredients);
     }
 
     @Getter
@@ -51,7 +50,7 @@ public class UpdateReqBody {
     @GroupSequence({IngStatusInfo.class, IngredientData.class})
     @StatusConstraint(payload = StatusBlankError.class,groups = IngStatusInfo.class)
     @IngIdConstraint(payload = IdNullError.class)
-    @IngAmountConstraint(payload = PriceError.class)
+    @IngAmountConstraint(payload = IngAmountError.class)
     public static class IngredientData {
 
         private Long id; //ingredient id

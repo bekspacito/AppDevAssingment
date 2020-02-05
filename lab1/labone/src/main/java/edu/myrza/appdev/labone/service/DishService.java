@@ -19,6 +19,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -97,7 +98,7 @@ public class DishService {
         return dishIngredient;
     }
 
-    @Transactional
+    @Transactional //чтобы не было пересохранения
     public void update(Long id, UpdateReqBody reqBody){
 
         Dish dishToUpd = dishRepository.findById(id).orElseThrow(noSuchDish(id));
@@ -105,17 +106,23 @@ public class DishService {
         reqBody.getName().ifPresent(dishToUpd::setName);
         reqBody.getPrice().map(BigDecimal::doubleValue).ifPresent(dishToUpd::setPrice);
 
-        Set<UpdateReqBody.IngredientData> ings = reqBody.getIngredients().orElse(Collections.emptySet());
+        Set<UpdateReqBody.IngredientData> ings = reqBody.getIngredients();
 
-        for(UpdateReqBody.IngredientData data : ings){
-            switch (data.getStatus()){
-                case "NEW" : addIng(data,dishToUpd); break;
-                case "UPD" : updateIng(data,dishToUpd); break;
-                case "DEL" : removeIng(data,dishToUpd); break;
-                default : System.out.println("STATUS ISNT SUPPORTED");
+        for (UpdateReqBody.IngredientData data : ings) {
+            switch (data.getStatus()) {
+                case "NEW":
+                    addIng(data, dishToUpd);
+                    break;
+                case "UPD":
+                    updateIng(data, dishToUpd);
+                    break;
+                case "DEL":
+                    removeIng(data, dishToUpd);
+                    break;
+                default:
+                    System.out.println("STATUS ISNT SUPPORTED");
             }
         }
-
     }
 
     private void updateIng(UpdateReqBody.IngredientData ingData, Dish dishToUpd){
@@ -144,12 +151,17 @@ public class DishService {
     private void removeIng(UpdateReqBody.IngredientData ingData,Dish dishToUpd){
         Set<DishIngredient> dishIngs = dishToUpd.getDishIngredients();
 
-        if(dishIngs.size() == 1) dishWithEmptyIngList(dishToUpd.getId());
+        if(dishIngs.size() <= 1){
+            BadReqResponseBody resp = new BadReqResponseBody.Builder(BadReqCodes.EMPTY_ING_LIST_DISH)
+                    .identifier(dishToUpd.getId())
+                    .build();
+
+            throw  new BadReqException(resp);
+        }
 
         dishIngs.removeIf(di -> di.getIngredient().getId().equals(ingData.getId()));
     }
 
-    @Transactional
     public void delete(Long id){
         try {
             dishRepository.deleteById(id);
@@ -160,12 +172,9 @@ public class DishService {
     }
 
     public FindDishRespBody findById(Long dishId){
-        Optional<Dish> dish = dishRepository.findById(dishId);
-        if(dish.isPresent()) {
-            return convert(dish.get());
-        }else {
-            throw noSuchDish(dishId).get();
-        }
+        Dish dish = dishRepository.findById(dishId).orElseThrow(noSuchDish(dishId));
+
+        return convert(dish);
     }
 
 
@@ -188,8 +197,7 @@ public class DishService {
     @Transactional
     protected FindDishRespBody convert(Dish dish){
 
-        List<FindIngRespBody> ingredients = dish.getDishIngredients().stream()
-                .map(DishIngredient::getIngredient)
+        List<FindDishRespBody.IngredientData> ingredients = dish.getDishIngredients().stream()
                 .map(this::convert)
                 .collect(Collectors.toList());
 
@@ -204,13 +212,17 @@ public class DishService {
 
     }
 
-    private FindIngRespBody convert(Ingredient ingredient){
+    private FindDishRespBody.IngredientData convert(DishIngredient dishIng){
+
+        Ingredient ingredient = dishIng.getIngredient();
         Unit unit = ingredient.getUnit();
 
+        //prepare unit data
         UnitRespBody unitBody = new UnitRespBody();
         unitBody.setId(unit.getId());
         unitBody.setName(unit.getName());
 
+        //prepare ingredient data
         FindIngRespBody ingBody = new FindIngRespBody();
 
         ingBody.setId(ingredient.getId());
@@ -218,14 +230,12 @@ public class DishService {
         ingBody.setPrice(ingredient.getPrice());
         ingBody.setUnit(unitBody);
 
-        return ingBody;
-    }
+        //prepare ingredient data relative to given dish(set amount etc)
+        FindDishRespBody.IngredientData ingData = new FindDishRespBody.IngredientData();
+        ingData.setAmount(dishIng.getAmount());
+        ingData.setIngredient(ingBody);
 
-    private Supplier<BadReqException> dishWithEmptyIngList(Long dishId){
-        BadReqResponseBody resp = new BadReqResponseBody.Builder(BadReqCodes.EMPTY_ING_LIST_DISH)
-                                                    .identifier(dishId)
-                                                    .build();
-        throw new BadReqException(resp);
+        return ingData;
     }
 
     private Supplier<BadReqException> noSuchDish(Long id){
@@ -233,7 +243,7 @@ public class DishService {
                 .identifier(id)
                 .build();
 
-        throw new BadReqException(body);
+        return () -> new BadReqException(body);
     }
 
 }
