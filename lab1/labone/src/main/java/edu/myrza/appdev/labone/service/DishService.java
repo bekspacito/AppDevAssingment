@@ -177,6 +177,11 @@ public class DishService {
         return convert(dish);
     }
 
+    public Dish findDishById(Long dishId){
+        Dish dish = dishRepository.findById(dishId).orElseThrow(noSuchDish(dishId));
+
+        return dish;
+    }
 
     public List<FindDishRespBody> findAll(){
         return StreamSupport.stream(dishRepository.findAll().spliterator(),false)
@@ -194,6 +199,7 @@ public class DishService {
                             .collect(Collectors.toList());
     }
 
+    //todo check whether transactional works here or not
     @Transactional
     protected FindDishRespBody convert(Dish dish){
 
@@ -230,7 +236,7 @@ public class DishService {
         ingBody.setPrice(ingredient.getPrice());
         ingBody.setUnit(unitBody);
 
-        //prepare ingredient data relative to given dish(set amount etc)
+        //prepare ingredient data relative to given dish(set portions etc)
         FindDishRespBody.IngredientData ingData = new FindDishRespBody.IngredientData();
         ingData.setAmount(dishIng.getAmount());
         ingData.setIngredient(ingBody);

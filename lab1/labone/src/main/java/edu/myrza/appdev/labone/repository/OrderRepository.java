@@ -1,8 +1,8 @@
 package edu.myrza.appdev.labone.repository;
 
-import edu.myrza.appdev.labone.domain.Order;
-import org.springframework.data.repository.CrudRepository;
+import edu.myrza.appdev.labone.domain.order.Order;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface OrderRepository extends CrudRepository<Order,Long>{
+public interface OrderRepository extends MongoRepository<Order,String> {
 
 }
