@@ -177,12 +177,6 @@ public class DishService {
         return convert(dish);
     }
 
-    public Dish findDishById(Long dishId){
-        Dish dish = dishRepository.findById(dishId).orElseThrow(noSuchDish(dishId));
-
-        return dish;
-    }
-
     public List<FindDishRespBody> findAll(){
         return StreamSupport.stream(dishRepository.findAll().spliterator(),false)
                                 .map(this::convert)

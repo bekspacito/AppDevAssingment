@@ -20,7 +20,8 @@ public enum BadReqCodes {
     // When there is an attempt to remove all ingredients from a dish during dish data update.Which is wrong
     // It's ING and not ENTITY because the error is really specific and could happen only in one place in the app
     EMPTY_ING_LIST_DISH,
-    ING_IS_IN_USE;
+    ING_IS_IN_USE,
+    NO_SUCH_ORDER;
 
 
 
@@ -41,10 +42,12 @@ public enum BadReqCodes {
 
             case FIELD_ERROR    :   return -106;
             case EMPTY_ING_LIST_DISH:   return -107;
-            case UNIQUE_ENTITY  :   return -108;
-            case DUPLICATE_ENTITIES:return -109;
-            case ALREADY_ADDED:     return -110;
-            case ING_IS_IN_USE:     return -111;
+            case UNIQUE_ENTITY  :   return -109;
+            case DUPLICATE_ENTITIES:return -110;
+            case ALREADY_ADDED:     return -111;
+            case ING_IS_IN_USE:     return -112;
+
+            case NO_SUCH_ORDER:     return -113;
 
             default : throw new IllegalArgumentException("NO SUCH BAD REQUEST CODE");
         }

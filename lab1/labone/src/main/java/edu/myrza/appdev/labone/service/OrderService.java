@@ -4,17 +4,20 @@ import edu.myrza.appdev.labone.domain.order.ODish;
 import edu.myrza.appdev.labone.domain.order.OIngredient;
 import edu.myrza.appdev.labone.domain.order.Order;
 import edu.myrza.appdev.labone.domain.order.OUnit;
+import edu.myrza.appdev.labone.error.BadReqCodes;
+import edu.myrza.appdev.labone.error.BadReqResponseBody;
+import edu.myrza.appdev.labone.exception.BadReqException;
 import edu.myrza.appdev.labone.payload.dish.FindDishRespBody;
 import edu.myrza.appdev.labone.payload.order.ClientReport;
-import edu.myrza.appdev.labone.payload.order.CreateRespBody;
 import edu.myrza.appdev.labone.payload.order.CreateReqBody;
 import edu.myrza.appdev.labone.repository.OrderRepository;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,16 +53,16 @@ public class OrderService {
     }
 
     public Order getFullReport(String orderId){
-        //todo no such order
-        Order order = orderRepository.findById(orderId).get();
+        Order order = orderRepository.findById(orderId)
+                                        .orElseThrow(noSuchOrder(orderId));
 
         return order;
     }
 
     public ClientReport getClientReport(String orderId){
 
-        //todo no such order
-        Order order = orderRepository.findById(orderId).get();
+        Order order = orderRepository.findById(orderId)
+                                        .orElseThrow(noSuchOrder(orderId));
 
         ClientReport report = new ClientReport();
 
@@ -83,19 +86,23 @@ public class OrderService {
     }
 
     public void deleteReport(String id){
-        //todo check if we try to delete a report that's not exist
-        orderRepository.deleteById(id);
+        try {
+            orderRepository.deleteById(id);
+        }catch (EmptyResultDataAccessException ex){
+            //this exception is thrown when we try to delete an entity that doesn't exits
+            //do nothing
+        }
     }
 
-    private ODish map(CreateReqBody.DishData dishData){
+    private ODish map(CreateReqBody.CrtDishInfo crtDishInfo){
 
-        FindDishRespBody dish = dishService.findById(dishData.getId());
+        FindDishRespBody dish = dishService.findById(crtDishInfo.getId());
 
         ODish data = new ODish();
         data.setName(dish.getName());
         data.setId(dish.getId());
         data.setPrice(dish.getPrice());
-        data.setPortions(dishData.getPortions());
+        data.setPortions(crtDishInfo.getPortions());
 
 
         List<OIngredient> ingredients = dish.getIngredients()
@@ -120,6 +127,15 @@ public class OrderService {
         OIngredient.setOUnit(OUnit);
 
         return OIngredient;
+    }
+
+    private static Supplier<BadReqException> noSuchOrder(String orderId){
+
+        BadReqResponseBody body = new BadReqResponseBody.Builder(BadReqCodes.NO_SUCH_ORDER)
+                                                        .identifier(orderId)
+                                                        .build();
+
+        return () -> new BadReqException(body);
     }
 
 }

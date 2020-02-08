@@ -66,18 +66,21 @@ public class IngredientService {
         }catch (EmptyResultDataAccessException ex){
             //this exception is thrown when we try to delete an entity that doesn't exits
             //do nothing
-        }catch (ConstraintViolationException cvex){
-            //We try to delete an ingredient that is used by dish(es)
-            if(cvex.getConstraintName().contains("FK_DISH_ING_ING")){
-                BadReqResponseBody body = new BadReqResponseBody
-                        .Builder(BadReqCodes.ING_IS_IN_USE)
-                        .identifier(id)
-                        .build();
+        }catch (DataIntegrityViolationException ex){
+            if(ConstraintViolationException.class.isAssignableFrom(ex.getCause().getClass())){
 
-                throw new BadReqException(body);
+                ConstraintViolationException cvex = (ConstraintViolationException) ex.getCause();
+                //We try to delete an ingredient that is used by dish(es)
+                if(cvex.getConstraintName().contains("FK_DISH_ING_ING")){
+                    BadReqResponseBody body = new BadReqResponseBody
+                            .Builder(BadReqCodes.ING_IS_IN_USE)
+                            .identifier(id)
+                            .build();
+
+                    throw new BadReqException(body);
+                }
             }
         }
-
     }
 
     public Ingredient findById(Long id){
