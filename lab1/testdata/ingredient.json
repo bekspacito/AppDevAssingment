@@ -1,0 +1,36 @@
+[{
+               "name"   : "potato",
+               "price"  : 3.99,
+               "unitId" : 1
+             },
+             {
+                "name"   : "milk",
+                "price"  : 2.99,
+                "unitId" : 2
+             },
+             {
+                 "name"  : "oil",
+                 "price" : 3.11,
+                 "unitId": 2
+             },
+             {
+                 "name"  : "egg",
+                 "price" : 0.99,
+                 "unitId": 3
+             },
+             {
+                 "name"  : "salt",
+                 "price" : 0.11,
+                 "unitId": 1
+             },
+             {
+                "name"   : "rice",
+                "price"  : 1.00,
+                "unitId" : 1
+             },
+             {
+                "name"   : "carrot",
+                "price"  : 4.99,
+                "unitId" : 1
+             }
+        ]
