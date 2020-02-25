@@ -16,7 +16,6 @@ import {
 	Button,
 	TextField
 } from '@material-ui/core'
-import _ from "lodash"
 
 const initState = {
 	id:"",
@@ -229,7 +228,7 @@ const mapStateToProps = state => ({
     error           : state.unitSection.listError,
     ingToUpd        : state.ingSection.ing,
     isLoading       : state.ingSection.loading,
-	fetchError      : state.ingSection.fetchError,
+	fetchError      : state.ingSection.fetchError
 })
 
 export default connect(mapStateToProps,{ fetchUnits,updateIng,fetchIng }) ( UpdateIngredient );

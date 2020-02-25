@@ -118,7 +118,8 @@ export default function(state=initialState, action){
 			return {
 				...state,
 				...{
-					updating : false
+					updating : false,
+					ing : null
 				}
 			}
 		case UPDATE_ING_FAILURE:

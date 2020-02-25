@@ -37,7 +37,7 @@ class DishList extends Component{
     handleUpdate(ingId){
         return e => {
               e.preventDefault();
-             // this.props.history.push(`/ingredient/update/${ingId}`);
+              this.props.history.push(`/dish/update/${ingId}`);
         }
     }
 

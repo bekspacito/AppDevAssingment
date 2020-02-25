@@ -3,7 +3,7 @@ import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { makeStyles } from '@material-ui/core/styles';
 import { fetchIngs } from "../../actions/ingredientActions"
-import { addDish } from "../../actions/dishActions"
+import { updateDish,fetchDish } from "../../actions/dishActions"
 import { 
 	Table,
 	TableBody,
@@ -17,13 +17,14 @@ import {
 } from '@material-ui/core'
 
 const initState = {
+	id:"",
 	name:"",
 	price:"",
 	ingredients:[], //{ id name unitname }
-	mode : "DISH_INFO"
+	mode : "DISH_INFO" //todo how about dish details
 }
 
-class AddDish extends Component{
+class UpdateDish extends Component{
 	constructor(props){
 		super(props);
 		this.state = initState;
@@ -35,21 +36,44 @@ class AddDish extends Component{
 		this.handleDelete = this.handleDelete.bind(this);
 	}
 
+	//componentDidMount
+	componentDidMount(){
+		const {uId} = this.props.match.params;
+		//here we send an action/function
+		this.props.fetchDish(uId);
+	}
+
+	static getDerivedStateFromProps(props,state){
+		if(props.dishToUpd && props.dishToUpd.id !== state.id){
+			const ings = props.dishToUpd.ingredients;
+			for (let i = 0; i < ings.length; i++) {
+				ings[i] = {...ings[i],...{ status : "INIT" }};
+			}
+			return props.dishToUpd;
+		}
+
+		return null;
+	}
+
 	handleSubmit(e){
 		e.preventDefault();
 		
-		const ingredients = this.state.ingredients.map(ing => ({
-			id : ing.id,
-			amount : ing.amount
-		}));
+		const ingredients = this.state.ingredients
+										.filter(ing => ing.status !== "INIT")
+										.map(ing => ({
+											id : ing.ingredient.id,
+											amount : ing.amount,
+											status : ing.status
+										}));
 
 		const dishInfo = {
 			name  : this.state.name,
 			price : this.state.price,
 			ingredients : ingredients
 		}
-		this.props.addDish(dishInfo,this.props.history);
+		this.props.updateDish(this.state.id,dishInfo,this.props.history);
 	}
+
 
 	handleChange(e){
 		this.setState({
@@ -57,10 +81,38 @@ class AddDish extends Component{
 		})
 	}
 
+	handleAmountChange(ingId,newAmount){
+		const ings = [...this.state.ingredients]
+		const i = ings.findIndex(ing => ing.ingredient.id === ingId)
+		ings[i] = {
+			amount : newAmount,
+			ingredient : ings[i].ingredient,
+			status : ings[i].status === "NEW" ? "NEW" : "UPD"		
+		}
+		
+		this.setState({	
+			ingredients : ings
+		})	
+	}
+
 	handleSelect(ingId){
 		const ings = [...this.state.ingredients];
-		const ing = this.props.list.find(i => i.id === ingId);
-		ings.push({...ing,...{ amount : 0.0 }})
+		const ingToAppend = this.props.list.find(i => i.id === ingId);
+
+		//in DEL state -> unDEL it,set it to UPD
+		//in other state -> do not add,because it is already in a list
+		//not in a list -> add it to list with status "NEW"
+		const ing = ings.find(i => i.ingredient.id === ingId);
+		if(ing && ing.status === "DEL"){
+			ing.status = "UPD";
+		}
+		else if(!ing){
+			ings.push({
+				amount : 0.0,
+				ingredient : ingToAppend,
+				status : "NEW"
+			})
+		}
 
 		this.setState({	
 			mode : "DISH_INFO",
@@ -68,19 +120,19 @@ class AddDish extends Component{
 		})
 	}
 
-	handleAmountChange(ingId,newAmount){
-		const ings = [...this.state.ingredients]
-		const ing = ings.find(i => i.id === ingId)
-		ing.amount = newAmount;
-
+	handleDelete(ingId){
+		let ings = [...this.state.ingredients];
+		const i = ings.findIndex(ing => ing.ingredient.id === ingId);
+		switch(ings[i].status){
+			case "NEW"  :
+				ings = this.state.ingredients.filter(ing => ing.ingredient.id !== ingId)
+				break;
+			default : 
+				ings[i].status = "DEL";
+				break;
+		}
 		this.setState({	
 			ingredients : ings
-		})	
-	}
-
-	handleDelete(ingId){
-		this.setState({	
-			ingredients : this.state.ingredients.filter(i => i.id !== ingId)
 		})	
 	}
 
@@ -98,7 +150,7 @@ class AddDish extends Component{
 			case "DISH_INFO" :
 				return this.renderDishInfoMode();
 			default : 
-				console.log("ХЕРНЯ ВСЕ, ПЕРЕДЕЛЫВАЙ...")
+				console.log("ВСЕ ХЕРНЯ, ПЕРЕДЕЛЫВАЙ...")
 				break;
 		}
 	}
@@ -158,28 +210,30 @@ class AddDish extends Component{
 				                          </TableRow>
 				                        </TableHead>
 				                        <TableBody>
-				                          {this.state.ingredients.map(row => (
-				                            <TableRow key={row.id}>
-				                              <TableCell component="th" scope="row">
-				                                {row.name}
-				                              </TableCell>
-				                              <TableCell component="th" scope="row">
-				                                <div className="form-group">
-						                        	<TextField value={row.amount} onChange={e => this.handleAmountChange(row.id,e.target.value)} variant="filled"/>
-		                        				</div>
-				                              </TableCell>
-				                              <TableCell component="th" scope="row">
-				                                {row.price}
-				                              </TableCell>
-				                              <TableCell component="th" scope="row">
-				                                {row.unit.name}
-				                              </TableCell>
-				                              <TableCell>       
-				                            	<Button onClick={e => this.handleDelete(row.id)} variant="contained" color="primary">
-					                            	Delete
-					                        	</Button>
-				                        	  </TableCell>
-				                            </TableRow>
+				                          {this.state.ingredients
+	                          				.filter(row => row.status !== "DEL")
+	                          				.map(row => (
+					                            <TableRow key={row.ingredient.id}>
+					                              <TableCell component="th" scope="row">
+					                                {row.ingredient.name}
+					                              </TableCell>
+					                              <TableCell component="th" scope="row">
+					                                <div className="form-group">
+							                        	<TextField value={row.amount} onChange={e => this.handleAmountChange(row.ingredient.id,e.target.value)} variant="filled"/>
+			                        				</div>
+					                              </TableCell>
+					                              <TableCell component="th" scope="row">
+					                                {row.ingredient.price}
+					                              </TableCell>
+					                              <TableCell component="th" scope="row">
+					                                {row.ingredient.unit.name}
+					                              </TableCell>
+					                              <TableCell>       
+					                            	<Button onClick={e => this.handleDelete(row.ingredient.id)} variant="contained" color="primary">
+						                            	Delete
+						                        	</Button>
+					                        	  </TableCell>
+					                            </TableRow>
 				                          ))}
 				                        </TableBody>
 				                      </Table>
@@ -191,7 +245,7 @@ class AddDish extends Component{
                             	</Button>
                             	<br /><br />                 	                   
 		                        <Button type="submit" variant="contained" color="primary">
-                                    Add
+                                    Update
                                 </Button>
 		                    </form>
 		                </div>
@@ -260,9 +314,12 @@ class AddDish extends Component{
 }
 
 const mapStateToProps = state => ({
-    list        : state.ingSection.ingList,
-    isLoading   : state.ingSection.listLoading,
-    error       : state.ingSection.listError,
+    list        	: state.ingSection.ingList,
+    isLoading   	: state.ingSection.listLoading,
+    error       	: state.ingSection.listError,
+    dishToUpd		: state.dishSection.dish,
+	isDishLoading   : state.dishSection.loading,
+	fetchError  	: state.dishSection.fetchError,
 })
 
-export default connect(mapStateToProps,{ fetchIngs,addDish }) ( AddDish );
+export default connect(mapStateToProps,{ fetchIngs,updateDish,fetchDish }) ( UpdateDish );

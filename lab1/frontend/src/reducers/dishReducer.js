@@ -91,6 +91,29 @@ export default function(state=initialState, action){
 					fetchError : action.payload
 				}
 			}
+		case ADD_DISH:
+			return {
+				...state,
+				...{
+					uploading : true
+				}
+			}
+		case ADD_DISH_SUCCESS:
+			return {
+				...state,
+				...{
+					uploading : false,
+					addError  : null
+				}
+			}
+		case ADD_DISH_FAILURE:
+			return {
+				...state,
+				...{
+					uploading : false,
+					addError  : action.payload
+				}
+			}
 		case DELETE_DISH:
 			return {
 				...state,
@@ -122,7 +145,8 @@ export default function(state=initialState, action){
 			return {
 				...state,
 				...{
-					updating : false
+					updating : false,
+					dish : null
 				}
 			}
 		case UPDATE_DISH_FAILURE:

@@ -14,8 +14,7 @@ import {
 	TableRow,
 	Paper,
 	Button,
-	TextField,
-	Box //to display unit name
+	TextField
 } from '@material-ui/core'
 
 const initState = {

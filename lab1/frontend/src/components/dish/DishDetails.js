@@ -8,7 +8,7 @@ class DishDetails extends Component{
 		const dish = this.props.dishToShow;
 		const ingList = dish.ingredients.map(ing => {
 			return (
-				<div>
+				<div key={ing.ingredient.id}>
 					name    : {ing.ingredient.name}<br />
 					price   : {ing.ingredient.price}<br />
 					amount  : {ing.amount} {ing.ingredient.unit.name}(s)<br />
