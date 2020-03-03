@@ -3,7 +3,7 @@ import { connect } from "react-redux"
 import { ING_LST } from "../../utils" 
 import { Link } from "react-router-dom"
 import { makeStyles } from '@material-ui/core/styles';
-import { fetchUnits } from "../../actions/unitActions"
+import { fetchUnits,fetchUnitsByName } from "../../actions/unitActions"
 import { addIng } from "../../actions/ingredientActions"
 import { 
 	Table,
@@ -18,6 +18,7 @@ import {
 } from '@material-ui/core'
 
 const initState = {
+	unitName : "",
 	name:"",
 	price:"",
 	unit:{
@@ -31,14 +32,15 @@ class AddIngredient extends Component{
 	constructor(props){
 		super(props);
 		this.state = initState;
-		this.renderIngInfoMode    = this.renderIngInfoMode.bind(this);
-		this.renderUnitSelectMode = this.renderUnitSelectMode.bind(this);
-		this.handleChange 		  = this.handleChange.bind(this);
-		this.setUnitSelectMode    = this.setUnitSelectMode.bind(this);
-		this.setIngInfoMode    	  = this.setIngInfoMode.bind(this);
-		this.formMessage 		  = this.formMessage.bind(this);
-		this.handleSelect		  = this.handleSelect.bind(this);
-		this.handleSubmit 		  = this.handleSubmit.bind(this);
+		this.renderIngInfoMode    	= this.renderIngInfoMode.bind(this);
+		this.renderUnitSelectMode 	= this.renderUnitSelectMode.bind(this);
+		this.handleChange 		  	= this.handleChange.bind(this);
+		this.setUnitSelectMode    	= this.setUnitSelectMode.bind(this);
+		this.setIngInfoMode    	  	= this.setIngInfoMode.bind(this);
+		this.formMessage 		  	= this.formMessage.bind(this);
+		this.handleSelect		  	= this.handleSelect.bind(this);
+		this.handleSubmit 		  	= this.handleSubmit.bind(this);
+		this.handleFetchUnitsByName = this.handleFetchUnitsByName.bind(this);
 	}
 
 	handleSubmit(e){
@@ -70,6 +72,11 @@ class AddIngredient extends Component{
 				unit : unit
 			}
 		})
+	}
+
+	handleFetchUnitsByName(unitName){
+		if(unitName === "") this.props.fetchUnits();
+		else this.props.fetchUnitsByName(unitName);
 	}
 
 	setUnitSelectMode(){
@@ -171,9 +178,15 @@ class AddIngredient extends Component{
 
 			return (
 				<TableContainer component={Paper}>
-	              <Button onClick={e => this.setIngInfoMode()} variant="contained" color="primary">
-	                  Back
-	              </Button>
+				  <div>
+		              <Button onClick={e => this.setIngInfoMode()} variant="contained" color="primary">
+		                  Back
+		              </Button>
+		              <TextField name="unitName" value={this.state.unitName} label="name" onChange={e => this.handleChange(e)} variant="outlined"/>
+          		  	  <Button onClick={e => this.handleFetchUnitsByName(this.state.unitName) } variant="contained" color="primary" >
+          		  	  		Find
+          		  	  </Button>	
+	              </div>
 	              <Table className={classes.table} size="small" aria-label="a dense table">
 	                <TableHead>
 	                  <TableRow>
@@ -212,4 +225,4 @@ const mapStateToProps = state => ({
     error       : state.unitSection.listError,
 })
 
-export default connect(mapStateToProps,{ fetchUnits,addIng }) ( AddIngredient );
+export default connect(mapStateToProps,{ fetchUnits,fetchUnitsByName,addIng }) ( AddIngredient );

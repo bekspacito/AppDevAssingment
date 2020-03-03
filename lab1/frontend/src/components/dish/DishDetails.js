@@ -9,6 +9,7 @@ class DishDetails extends Component{
 		const ingList = dish.ingredients.map(ing => {
 			return (
 				<div key={ing.ingredient.id}>
+					<br /><br />
 					name    : {ing.ingredient.name}<br />
 					price   : {ing.ingredient.price}<br />
 					amount  : {ing.amount} {ing.ingredient.unit.name}(s)<br />

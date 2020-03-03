@@ -85,6 +85,24 @@ export const fetchUnits = () => async dispatch => {
 
 }
 
+export const fetchUnitsByName = (unitName) => async dispatch => {
+
+	dispatch({type : FETCH_UNITS});
+	try{
+		const result =  await axios.get(`${ROOT_URL}/api/unit/pname/${unitName}`);
+		dispatch({
+			type : FETCH_UNITS_SUCCESS,
+			payload : result.data
+		})
+	}catch(error){
+		dispatch({
+			type : FETCH_UNITS_FAILURE,
+			payload : error.response	
+		})
+	}
+
+}
+
 export const fetchUnit = (unitId) => async dispatch => {
 
 	dispatch({type : FETCH_UNIT});

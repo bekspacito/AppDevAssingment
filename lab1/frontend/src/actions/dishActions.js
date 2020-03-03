@@ -40,6 +40,24 @@ export const fetchDishes = () => async dispatch => {
 	}
 }
 
+export const fetchDishesByName = (partName) => async dispatch => {
+
+	dispatch({type : FETCH_DISHES})
+	try{
+		const result =  await axios.get(`${ROOT_URL}/api/dish/pname/${partName}`);
+		dispatch({
+			type : FETCH_DISHES_SUCCESS,
+			payload : result.data
+		})
+	}catch(error){
+		dispatch({
+			type : FETCH_DISHES_FAILURE,
+			payload : error.response	
+		})
+	}	
+
+}
+
 export const fetchDish = (dishId) => async dispatch => {
 
 	dispatch({type : FETCH_DISH});

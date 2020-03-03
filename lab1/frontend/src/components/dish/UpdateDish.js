@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { makeStyles } from '@material-ui/core/styles';
-import { fetchIngs } from "../../actions/ingredientActions"
+import { fetchIngs,fetchIngsByName } from "../../actions/ingredientActions"
 import { updateDish,fetchDish } from "../../actions/dishActions"
 import { 
 	Table,
@@ -17,6 +17,7 @@ import {
 } from '@material-ui/core'
 
 const initState = {
+	ingName : "",
 	id:"",
 	name:"",
 	price:"",
@@ -34,6 +35,7 @@ class UpdateDish extends Component{
 		this.handleAmountChange = this.handleAmountChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleDelete = this.handleDelete.bind(this);
+		this.handleFetchIngsByName = this.handleFetchIngsByName.bind(this);
 	}
 
 	//componentDidMount
@@ -41,6 +43,11 @@ class UpdateDish extends Component{
 		const {uId} = this.props.match.params;
 		//here we send an action/function
 		this.props.fetchDish(uId);
+	}
+
+	handleFetchIngsByName(ingName){
+		if(ingName === "") this.props.fetchIngs();
+		else this.props.fetchIngsByName(ingName);
 	}
 
 	static getDerivedStateFromProps(props,state){
@@ -269,9 +276,15 @@ class UpdateDish extends Component{
 
 			return (<div>
 					<TableContainer component={Paper}>
-                      <Button onClick={e => this.setMode("DISH_INFO")} variant="contained" color="primary">
-	                  		Back
-              		  </Button>
+                      <div>
+	                      <Button onClick={e => this.setMode("DISH_INFO")} variant="contained" color="primary">
+		                  		Back
+	              		  </Button>
+	              		  <TextField name="ingName" value={this.state.ingName} label="name" onChange={e => this.handleChange(e)} variant="outlined"/>
+	          		  	  <Button onClick={e => this.handleFetchIngsByName(this.state.ingName) } variant="contained" color="primary" >
+	          		  	  		Find
+	          		  	  </Button>
+          		  	  </div>	
                       <Table className={classes.table} size="small" aria-label="a dense table">
                         <TableHead>
                           <TableRow>
@@ -322,4 +335,4 @@ const mapStateToProps = state => ({
 	fetchError  	: state.dishSection.fetchError,
 })
 
-export default connect(mapStateToProps,{ fetchIngs,updateDish,fetchDish }) ( UpdateDish );
+export default connect(mapStateToProps,{ fetchIngs,fetchIngsByName,updateDish,fetchDish }) ( UpdateDish );

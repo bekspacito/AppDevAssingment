@@ -18,6 +18,7 @@ import {
     UNIT_ADD_PATH,
     UNIT_UPD_PATH,
 } from "../../utils"
+import styles from "../../App.css"
 
 class UnitsList extends Component{
     constructor(props){
@@ -62,7 +63,7 @@ class UnitsList extends Component{
             });
             
             return (
-                <div>
+                <div className={styles.element}>
                     <Button onClick={e => this.props.history.push(`${UNIT_ADD_PATH}`)} variant="contained" color="primary">
                         Add New Unit
                     </Button>

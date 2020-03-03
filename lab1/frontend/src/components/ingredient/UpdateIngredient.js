@@ -3,7 +3,7 @@ import { connect } from "react-redux"
 import { ING_LST } from "../../utils" 
 import { Link } from "react-router-dom"
 import { makeStyles } from '@material-ui/core/styles';
-import { fetchUnits } from "../../actions/unitActions"
+import { fetchUnits,fetchUnitsByName } from "../../actions/unitActions"
 import { updateIng,fetchIng } from "../../actions/ingredientActions"
 import { 
 	Table,
@@ -18,6 +18,7 @@ import {
 } from '@material-ui/core'
 
 const initState = {
+	unitName:"", //this one is for unit searching
 	id:"",
 	name:"",
 	price:"",
@@ -40,6 +41,7 @@ class UpdateIngredient extends Component{
 		this.formMessage 		  = this.formMessage.bind(this);
 		this.handleSelect		  = this.handleSelect.bind(this);
 		this.handleSubmit 		  = this.handleSubmit.bind(this);
+		this.handleFetchUnitsByName = this.handleFetchUnitsByName.bind(this);
 	}
 
 	//componentDidMount
@@ -55,6 +57,11 @@ class UpdateIngredient extends Component{
 		}
 
 		return null;
+	}
+
+	handleFetchUnitsByName(unitName){
+		if(unitName === "") this.props.fetchUnits();
+		else this.props.fetchUnitsByName(unitName);
 	}
 
 	handleSubmit(e){
@@ -187,9 +194,15 @@ class UpdateIngredient extends Component{
 
 			return (
 				<TableContainer component={Paper}>
-	              <Button onClick={e => this.setIngInfoMode()} variant="contained" color="primary">
-	                  Back
-	              </Button>
+	              <div>
+		              <Button onClick={e => this.setIngInfoMode()} variant="contained" color="primary">
+		                  Back
+		              </Button>
+		              <TextField name="unitName" value={this.state.unitName} label="name" onChange={e => this.handleChange(e)} variant="outlined"/>
+          		  	  <Button onClick={e => this.handleFetchUnitsByName(this.state.unitName) } variant="contained" color="primary" >
+          		  	  		Find
+          		  	  </Button>	
+	              </div>
 	              <Table className={classes.table} size="small" aria-label="a dense table">
 	                <TableHead>
 	                  <TableRow>
@@ -231,4 +244,4 @@ const mapStateToProps = state => ({
 	fetchError      : state.ingSection.fetchError
 })
 
-export default connect(mapStateToProps,{ fetchUnits,updateIng,fetchIng }) ( UpdateIngredient );
+export default connect(mapStateToProps,{ fetchUnits,fetchUnitsByName,updateIng,fetchIng }) ( UpdateIngredient );

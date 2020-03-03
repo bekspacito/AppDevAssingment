@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { makeStyles } from '@material-ui/core/styles';
-import { fetchIngs } from "../../actions/ingredientActions"
+import { fetchIngs,fetchIngsByName } from "../../actions/ingredientActions"
 import { addDish } from "../../actions/dishActions"
 import { 
 	Table,
@@ -17,6 +17,7 @@ import {
 } from '@material-ui/core'
 
 const initState = {
+	ingName : "", //for ingredient searching
 	name:"",
 	price:"",
 	ingredients:[], //{ id name unitname }
@@ -33,6 +34,7 @@ class AddDish extends Component{
 		this.handleAmountChange = this.handleAmountChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleDelete = this.handleDelete.bind(this);
+		this.handleFetchIngsByName = this.handleFetchIngsByName.bind(this);
 	}
 
 	handleSubmit(e){
@@ -66,6 +68,11 @@ class AddDish extends Component{
 			mode : "DISH_INFO",
 			ingredients : ings		
 		})
+	}
+
+	handleFetchIngsByName(ingName){
+		if(ingName === "") this.props.fetchIngs();
+		else this.props.fetchIngsByName(ingName);
 	}
 
 	handleAmountChange(ingId,newAmount){
@@ -215,9 +222,15 @@ class AddDish extends Component{
 
 			return (<div>
 					<TableContainer component={Paper}>
-                      <Button onClick={e => this.setMode("DISH_INFO")} variant="contained" color="primary">
-	                  		Back
-              		  </Button>
+                      <div>
+	                      <Button onClick={e => this.setMode("DISH_INFO")} variant="contained" color="primary">
+		                  		Back
+	              		  </Button>
+	              		  <TextField name="ingName" value={this.state.ingName} label="name" onChange={e => this.handleChange(e)} variant="outlined"/>
+              		  	  <Button onClick={e => this.handleFetchIngsByName(this.state.ingName) } variant="contained" color="primary" >
+              		  	  		Find
+              		  	  </Button>	
+              		  </div>
                       <Table className={classes.table} size="small" aria-label="a dense table">
                         <TableHead>
                           <TableRow>
@@ -265,4 +278,4 @@ const mapStateToProps = state => ({
     error       : state.ingSection.listError,
 })
 
-export default connect(mapStateToProps,{ fetchIngs,addDish }) ( AddDish );
+export default connect(mapStateToProps,{ fetchIngs,fetchIngsByName,addDish }) ( AddDish );

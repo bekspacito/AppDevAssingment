@@ -42,6 +42,23 @@ export const fetchIngs = () => async dispatch => {
 	}
 }
 
+export const fetchIngsByName = (ingName) => async dispatch => {
+	
+	dispatch({type : FETCH_INGS})
+	try{
+		const result =  await axios.get(`${ROOT_URL}/api/ingredient/pname/${ingName}`);
+		dispatch({
+			type : FETCH_INGS_SUCCESS,
+			payload : result.data
+		})
+	}catch(error){
+		dispatch({
+			type : FETCH_INGS_FAILURE,
+			payload : error.response	
+		})
+	}
+}
+
 export const fetchIng = (ingId) => async dispatch => {
 
 	dispatch({type : FETCH_ING});

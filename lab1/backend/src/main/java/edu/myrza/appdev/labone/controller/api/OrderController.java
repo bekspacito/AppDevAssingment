@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Validator;
+import java.util.List;
 
 @Controller
 @RequestMapping("/api/order")
@@ -83,6 +84,12 @@ public class OrderController {
         }
 
         return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> findAll(){
+        List<ClientReport> clientReports = orderService.findAll();
+        return ResponseEntity.ok(clientReports);
     }
 
     @DeleteMapping("/{orderId}")

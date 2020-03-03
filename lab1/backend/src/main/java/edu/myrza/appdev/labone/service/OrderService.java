@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -25,6 +27,7 @@ public class OrderService {
 
     private OrderRepository orderRepository;
     private DishService dishService;
+    private static Random r = new Random();
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
@@ -32,6 +35,24 @@ public class OrderService {
     {
         this.orderRepository = orderRepository;
         this.dishService = dishService;
+    }
+
+    private static String generateOrderId(){
+        StringBuilder builder = new StringBuilder();
+
+        //epoch time
+        builder.append(Instant.now().toEpochMilli());
+
+        //random one number addition
+        builder.append(r.nextInt(10));
+
+        //decorations
+        if(builder.length() == 14) {
+            builder.insert(4, '-');
+            builder.insert(11, '-');
+        }
+
+        return builder.toString();
     }
 
     public String save(CreateReqBody reqBody){
@@ -43,6 +64,7 @@ public class OrderService {
         Double price = dishes.stream().mapToDouble(ODish::getFullPrice).sum();
 
         Order order = new Order();
+        order.setId(generateOrderId());
         order.setOrderDate(LocalDateTime.now());
         order.setDishes(dishes);
         order.setPrice(price);
@@ -64,25 +86,13 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                                         .orElseThrow(noSuchOrder(orderId));
 
-        ClientReport report = new ClientReport();
+        return map(order);
+    }
 
-        List<ClientReport.DishInfo> dishesInfo = order.getDishes().stream()
-                                                        .map(oDish -> {
-                                                            ClientReport.DishInfo dishInfo = new ClientReport.DishInfo();
-                                                            dishInfo.setId(oDish.getId());
-                                                            dishInfo.setName(oDish.getName());
-                                                            dishInfo.setPortions(oDish.getPortions());
-                                                            dishInfo.setPrice(oDish.getPrice());
-
-                                                            return dishInfo; })
-                                                        .collect(Collectors.toList());
-
-        report.setOrderPrice(order.getPrice());
-        report.setOrderDate(order.getOrderDate());
-        report.setOrderId(order.getId());
-        report.setDishes(dishesInfo);
-
-        return report;
+    public List<ClientReport> findAll(){
+      return orderRepository.findAll().stream()
+                                  .map(this::map)
+                                  .collect(Collectors.toList());
     }
 
     public void deleteReport(String id){
@@ -92,6 +102,28 @@ public class OrderService {
             //this exception is thrown when we try to delete an entity that doesn't exits
             //do nothing
         }
+    }
+
+    private ClientReport map(Order order){
+        ClientReport report = new ClientReport();
+
+        List<ClientReport.DishInfo> dishesInfo = order.getDishes().stream()
+                .map(oDish -> {
+                    ClientReport.DishInfo dishInfo = new ClientReport.DishInfo();
+                    dishInfo.setId(oDish.getId());
+                    dishInfo.setName(oDish.getName());
+                    dishInfo.setPortions(oDish.getPortions());
+                    dishInfo.setPrice(oDish.getPrice());
+
+                    return dishInfo; })
+                .collect(Collectors.toList());
+
+        report.setOrderPrice(order.getPrice());
+        report.setOrderDate(order.getOrderDate());
+        report.setOrderId(order.getId());
+        report.setDishes(dishesInfo);
+
+        return report;
     }
 
     private ODish map(CreateReqBody.CrtDishInfo crtDishInfo){

@@ -8,33 +8,26 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import TextField from '@material-ui/core/TextField';
-import { Button } from '@material-ui/core';
+import { Button,TextField } from '@material-ui/core';
 import { 
-    fetchDishes,fetchDishesByName,deleteDish
-} from "../../actions/dishActions"
-import DishDetails from "./DishDetails"
+    fetchOrders,fetchOrdersById,deleteOrder
+} from "../../actions/orderActions"
+import OrderDetails from "./OrderDetails"
 
-class DishList extends Component{
+class OrderList extends Component{
     constructor(props){
         super(props);
         this.state = {
-          name : "",
+          orderId : "",
           showDetails : false,
-          dish : null,
+          order : null
         }
-        this.handleDelete     = this.handleDelete.bind(this);
-        this.handleUpdate     = this.handleUpdate.bind(this);
-        this.handleDetails    = this.handleDetails.bind(this);
+        this.handleDelete  = this.handleDelete.bind(this);
+        this.handleDetails = this.handleDetails.bind(this);
         this.handleBackToList = this.handleBackToList.bind(this);
-        this.handleAdd        = this.handleAdd.bind(this);
-        this.formMessage      = this.formMessage.bind(this);
-        this.handleChange     = this.handleChange.bind(this);
-    }
-
-    componentDidMount(){
-        //async api call to get all the tasks
-        this.props.fetchDishes();
+        this.handleAdd     = this.handleAdd.bind(this);
+        this.formMessage   = this.formMessage.bind(this);
+        this.handleChange  = this.handleChange.bind(this);
     }
 
     handleChange(e){
@@ -43,41 +36,39 @@ class DishList extends Component{
         })
     }
 
-    handleUpdate(ingId){
-        return e => {
-              e.preventDefault();
-              this.props.history.push(`/dish/update/${ingId}`);
-        }
+    componentDidMount(){
+        //async api call to get all the tasks
+        this.props.fetchOrders();
     }
 
     handleAdd(){
         return e => {
               e.preventDefault();
-              this.props.history.push("/dish/add");
+              this.props.history.push("/order/add");
         } 
     }
 
-    handleDelete(dishId){
+    handleDelete(orderId){
         return e => {
               e.preventDefault();
-              this.props.deleteDish(dishId,this.props.history);
+              this.props.deleteOrder(orderId,this.props.history);
         }
     }
 
-    handleDetails(dishId){
+    handleDetails(id){
         return e => {
+          console.log(id);
           e.preventDefault();
           this.setState({
               showDetails : true,
-              dish : this.props.list.find(d => d.id == dishId)
+              order : this.props.list.find(o => o.orderId === id)
           })
         }
     }
 
     handleBackToList(){
         this.setState({
-              showDetails : false,
-              dish : null
+              showDetails : false
         })
     }
 
@@ -90,7 +81,7 @@ class DishList extends Component{
             if(this.props.isLoading)   return this.formMessage("Loading ...");
        else if(this.props.error)       return this.formMessage("Error ...");
        else if(this.state.showDetails){
-            return <DishDetails dishToShow={this.state.dish} backToList={() => this.handleBackToList()}/>
+            return <OrderDetails orderToShow={this.state.order} backToList={() => this.handleBackToList()}/>
        }   
        else {
             const rows = this.props.list;
@@ -99,60 +90,54 @@ class DishList extends Component{
                     minWidth: 650,
                   },
             });
-            
+
             return (
                 <div>
                     <div>
                       <Button onClick={this.handleAdd()} variant="contained" color="primary">
-                          Add New Dish
+                          Add New Order
                       </Button>
                       <TextField
-                         label="name"
-                         name="name"
+                         label="ID"
+                         name="orderId"
                          onChange={this.handleChange}
                          variant="outlined"
                       />
-                      <Button onClick={e => this.props.fetchDishesByName(this.state.name)} variant="contained" color="primary">
+                      <Button onClick={e => this.props.fetchOrdersById(this.state.orderId)} variant="contained" color="primary">
                           Find
-                      </Button>                  
+                      </Button>
                     </div>
                     <TableContainer component={Paper}>
                       <Table className={classes.table} size="small" aria-label="a dense table">
                         <TableHead>
                           <TableRow>
                             <TableCell>ID</TableCell>
-                            <TableCell>Name</TableCell>
+                            <TableCell>Date</TableCell>
                             <TableCell>Price</TableCell>
-                            <TableCell></TableCell>
                             <TableCell></TableCell>
                             <TableCell></TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {rows.map(row => (
-                            <TableRow key={row.id}>
+                            <TableRow key={row.orderId}>
                               <TableCell component="th" scope="row">
-                                {row.id}
+                                {row.orderId}
                               </TableCell>
                               <TableCell component="th" scope="row">
-                                {row.name}
+                                {(new Date(row.orderDate)).toLocaleString()}
                               </TableCell>
                               <TableCell component="th" scope="row">
-                                {row.price}
+                                {row.orderPrice}
                               </TableCell>
                               <TableCell align="left" >
-                                    <Button onClick={this.handleDetails(row.id)} variant="contained" color="primary">
+                                    <Button onClick={this.handleDetails(row.orderId)} variant="contained" color="primary">
                                         Details
                                     </Button>
                               </TableCell>
                               <TableCell align="left" >
-                                    <Button onClick={this.handleDelete(row.id)} variant="contained" color="primary">
+                                    <Button onClick={this.handleDelete(row.orderId)} variant="contained" color="primary">
                                         Delete
-                                    </Button>
-                              </TableCell>
-                              <TableCell align="left" >
-                                    <Button onClick={this.handleUpdate(row.id)} variant="contained" color="primary">
-                                        Update
                                     </Button>
                               </TableCell>                              
                             </TableRow>
@@ -170,13 +155,13 @@ class DishList extends Component{
 }
 
 const mapStateToProps = state => ({
-    list        : state.dishSection.dishList,
-    isLoading   : state.dishSection.listLoading,
-    error       : state.dishSection.listError
+    list        : state.orderSection.orderList,
+    isLoading   : state.orderSection.listLoading,
+    error       : state.orderSection.listError
 })
 
 //getBacklog is an action creator
 //it will be wrapped inside a function with a body like : 
 // () => store.dispatch(getBacklog())
 //next things is that dispatched action will be caught by and executed by thunk
-export default connect(mapStateToProps,{ fetchDishes,fetchDishesByName,deleteDish })(DishList);
+export default connect(mapStateToProps,{ fetchOrders,deleteOrder,fetchOrdersById })( OrderList );

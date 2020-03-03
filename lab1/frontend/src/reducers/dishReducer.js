@@ -123,7 +123,7 @@ export default function(state=initialState, action){
 			return {
 				...state,
 				...{
-					dishList   : state.dishList.filter(i => i.id != action.payload.id),
+					dishList  : state.dishList.filter(i => i.id != action.payload.id),
 					deleting  : false,
 					didDelete : true
 				}
