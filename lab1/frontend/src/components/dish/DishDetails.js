@@ -16,6 +16,9 @@ class DishDetails extends Component{
 				</div>
 			)
 		})
+		const costPrice = dish.ingredients.map(ing => ing.ingredient.price * ing.amount)
+								      	  .reduce((total,el) => total += el); 
+
 		return (
 			<div>
 				<Button onClick={e => this.props.backToList()} variant="contained" color="primary">
@@ -26,6 +29,7 @@ class DishDetails extends Component{
 					ID : {dish.id}<br />
 					NAME : {dish.name}<br />
 					PRICE : {dish.price}<br />
+					COST PRICE : {costPrice}<br />
 					INGREDIENTS : <br />
 					<div>
 					{

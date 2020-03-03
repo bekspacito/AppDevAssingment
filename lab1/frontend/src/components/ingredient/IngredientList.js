@@ -8,18 +8,23 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import { Button } from '@material-ui/core';
+import { Button,TextField } from '@material-ui/core';
 import { 
-    fetchIngs,deleteIng
+    fetchIngs,deleteIng,fetchIngsByName
 } from "../../actions/ingredientActions"
 
 class IngredientList extends Component{
     constructor(props){
-        super(props);
+        super(props)
+        this.state = {
+          name : ""
+        }
         this.handleDelete = this.handleDelete.bind(this);
         this.handleUpdate = this.handleUpdate.bind(this);
         this.handleAdd    = this.handleAdd.bind(this);
         this.formMessage  = this.formMessage.bind(this);
+        this.handleFetchIngsByName = this.handleFetchIngsByName.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount(){
@@ -32,6 +37,17 @@ class IngredientList extends Component{
               e.preventDefault();
               this.props.history.push(`/ingredient/update/${ingId}`);
         }
+    }
+
+    handleChange(e){
+      this.setState({
+        [e.target.name] : e.target.value 
+      })
+    }
+
+    handleFetchIngsByName(ingName){
+      if(ingName === "") this.props.fetchIngs();
+      else this.props.fetchIngsByName(ingName);
     }
 
     handleAdd(){
@@ -66,9 +82,15 @@ class IngredientList extends Component{
             
             return (
                 <div>
-                    <Button onClick={this.handleAdd()} variant="contained" color="primary">
-                        Add New Ingredient
-                    </Button>
+                    <div>
+                      <Button onClick={this.handleAdd()} variant="contained" color="primary">
+                          Add New Ingredient
+                      </Button>
+                      <TextField name="name" value={this.state.name} label="name" onChange={e => this.handleChange(e)} variant="outlined"/>
+                      <Button onClick={e => this.handleFetchIngsByName(this.state.name) } variant="contained" color="primary" >
+                          Find
+                      </Button>
+                    </div> 
                     <TableContainer component={Paper}>
                       <Table className={classes.table} size="small" aria-label="a dense table">
                         <TableHead>
@@ -130,4 +152,4 @@ const mapStateToProps = state => ({
 //it will be wrapped inside a function with a body like : 
 // () => store.dispatch(getBacklog())
 //next things is that dispatched action will be caught by and executed by thunk
-export default connect(mapStateToProps,{ fetchIngs,deleteIng })(IngredientList);
+export default connect(mapStateToProps,{ fetchIngs,fetchIngsByName,deleteIng })(IngredientList);

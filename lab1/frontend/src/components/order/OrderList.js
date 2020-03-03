@@ -28,6 +28,7 @@ class OrderList extends Component{
         this.handleAdd     = this.handleAdd.bind(this);
         this.formMessage   = this.formMessage.bind(this);
         this.handleChange  = this.handleChange.bind(this);
+        this.handleFetchById = this.handleFetchById.bind(this); 
     }
 
     handleChange(e){
@@ -66,6 +67,11 @@ class OrderList extends Component{
         }
     }
 
+    handleFetchById(orderId){
+        if(orderId === "") this.props.fetchOrders();
+        else this.props.fetchOrdersById(orderId);
+    }
+
     handleBackToList(){
         this.setState({
               showDetails : false
@@ -100,10 +106,11 @@ class OrderList extends Component{
                       <TextField
                          label="ID"
                          name="orderId"
+                         value={this.state.orderId}
                          onChange={this.handleChange}
                          variant="outlined"
                       />
-                      <Button onClick={e => this.props.fetchOrdersById(this.state.orderId)} variant="contained" color="primary">
+                      <Button onClick={e => this.handleFetchById(this.state.orderId)} variant="contained" color="primary">
                           Find
                       </Button>
                     </div>

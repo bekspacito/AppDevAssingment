@@ -131,9 +131,9 @@ class UpdateIngredient extends Component{
 		        <div className="container">
 		            <div className="row">
 		                <div className="col-md-8 m-auto">
-		                    <Link to={ ING_LST } className="btn btn-light">
-		                        Back to Ingredient List
-		                    </Link>
+		                   <Button onClick={e => this.props.history.push("/ingredient")} variant="contained" color="primary">
+                  				Back
+              		  		</Button>
 		                    <h4 className="display-4 text-center">Add/Update Ingredient</h4>
 		                    <form className={classes.root} onSubmit={this.handleSubmit}>
 		                        <div className="form-group">

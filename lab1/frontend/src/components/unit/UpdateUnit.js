@@ -3,6 +3,11 @@ import { Link } from "react-router-dom"
 import { connect } from "react-redux"
 import { fetchUnit,updateUnit,resetUpdate } from "../../actions/unitActions"
 import _ from "lodash"
+import { 
+	Button,
+	TextField
+} from '@material-ui/core'
+
 
 
 const initState = {
@@ -62,19 +67,26 @@ class UpdateUnit extends Component{
 			        <div className="container">
 			            <div className="row">
 			                <div className="col-md-8 m-auto">
-			                    <Link to="/unit" className="btn btn-light">
-			                        Back to Unit List
-			                    </Link>
+			                    <Button onClick={e => this.props.history.push("/unit")} variant="contained" color="primary">
+		                  				Back
+	              		  		</Button>
 			                    <h4 className="display-4 text-center">Add/Update Unit</h4>
 			                    <form onSubmit={this.onSubmit}>
 			                        <div className="form-group">
-			                            <input type="text" 
-			                            	   className="form-control form-control-lg" 
-			                            	   name="name" 
-			                            	   value={this.state.name}
-			                            	   onChange={this.onChange}/>
+	                            	    <div className="form-group">
+				                        	<TextField
+				                        	 id="name"
+								             label="Name"
+								             name="name"
+								             onChange={this.onChange}
+								             value={this.state.name}
+								             variant="filled"
+									        />
+		                        		</div>
 			                        </div>
-			                        <input type="submit" className="btn btn-primary btn-block mt-4" />
+			                         <Button type="submit" variant="contained" color="primary">
+                                   		 Add
+                                	</Button>
 			                    </form>
 			                </div>
 			            </div>

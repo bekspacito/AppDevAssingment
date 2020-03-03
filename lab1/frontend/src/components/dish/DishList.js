@@ -19,7 +19,7 @@ class DishList extends Component{
     constructor(props){
         super(props);
         this.state = {
-          name : "",
+          name : "", //for searching purposes
           showDetails : false,
           dish : null,
         }
@@ -30,6 +30,7 @@ class DishList extends Component{
         this.handleAdd        = this.handleAdd.bind(this);
         this.formMessage      = this.formMessage.bind(this);
         this.handleChange     = this.handleChange.bind(this);
+        this.handleFetchDishesByName = this.handleFetchDishesByName.bind(this);
     }
 
     componentDidMount(){
@@ -41,6 +42,11 @@ class DishList extends Component{
         this.setState({
           [e.target.name] : e.target.value 
         })
+    }
+
+    handleFetchDishesByName(dishName){
+      if(dishName === "") this.props.fetchDishes();
+      else this.props.fetchDishesByName(dishName);
     }
 
     handleUpdate(ingId){
@@ -110,9 +116,10 @@ class DishList extends Component{
                          label="name"
                          name="name"
                          onChange={this.handleChange}
+                         value={this.state.name}
                          variant="outlined"
                       />
-                      <Button onClick={e => this.props.fetchDishesByName(this.state.name)} variant="contained" color="primary">
+                      <Button onClick={e => this.handleFetchDishesByName(this.state.name)} variant="contained" color="primary">
                           Find
                       </Button>                  
                     </div>

@@ -152,12 +152,11 @@ class UpdateDish extends Component{
 	render(){
 		switch(this.state.mode){
 			case "ING_SELECT" :
-				if(this.props.list.length === 0) this.props.fetchIngs();
+				if(this.props.list.length === 0 && this.state.ingName === "") this.props.fetchIngs();
 				return this.renderIngSelectMode()
 			case "DISH_INFO" :
 				return this.renderDishInfoMode();
 			default : 
-				console.log("ВСЕ ХЕРНЯ, ПЕРЕДЕЛЫВАЙ...")
 				break;
 		}
 	}
@@ -179,9 +178,9 @@ class UpdateDish extends Component{
 		        <div className="container">
 		            <div className="row">
 		                <div className="col-md-8 m-auto">
-		                    <Link to="/dish" className="btn btn-light">
-		                        Back to Dish List
-		                    </Link>
+		                    <Button onClick={e => this.props.history.push("/dish")} variant="contained" color="primary">
+                  				Back
+              		  		</Button>
 		                    <h4 className="display-4 text-center">Add/Update Dish</h4>
 		                    <form className={classes.root} onSubmit={this.handleSubmit}>
 		                        <div className="form-group">

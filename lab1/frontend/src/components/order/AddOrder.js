@@ -96,12 +96,12 @@ class AddOrder extends Component{
 	render(){
 		switch(this.state.mode){
 			case "DISH_SELECT" :
-				if(this.props.list.length === 0) this.props.fetchDishes();
+				if(this.props.list.length === 0 && this.state.dishName === "") 
+					this.props.fetchDishes();
 				return this.renderSelectMode()
 			case "ORDER_INFO" :
 				return this.renderInfoMode();
-			default : 
-				console.log("ХЕРНЯ ВСЕ, ПЕРЕДЕЛЫВАЙ...")
+			default :				
 				break;
 		}
 	}
@@ -124,9 +124,9 @@ class AddOrder extends Component{
 		        <div className="container">
 		            <div className="row">
 		                <div className="col-md-8 m-auto">
-		                    <Link to="/order" className="btn btn-light">
-		                        Back to Orders
-		                    </Link>
+		                    <Button onClick={e => this.props.history.push("/order")} variant="contained" color="primary">
+                  				Back
+              		  		</Button>
 		                    <h4 className="display-4 text-center">Make Order</h4>
 		                    <form className={classes.root} onSubmit={this.handleSubmit}>
 		                        <div className="form-group">

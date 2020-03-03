@@ -15,7 +15,7 @@ class OrderDetails extends Component{
 					portions  : {dish.portions} <br />
 				</div>
 			)
-		})
+		})		
 
 		return (
 			<div>
@@ -27,6 +27,7 @@ class OrderDetails extends Component{
 					ID    : {order.orderId}<br />
 					PRICE : {order.orderPrice}<br />
 					DATE  : {(new Date(order.orderDate)).toLocaleString()}<br />
+					PRIME COST : {priceCost}<br />
 					DISHES : 
 					<div>
 					{

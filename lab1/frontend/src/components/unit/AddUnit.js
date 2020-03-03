@@ -59,23 +59,26 @@ class AddUnit extends Component{
 		        <div className="container">
 		            <div className="row">
 		                <div className="col-md-8 m-auto">
-		                    <Link to={UNIT_LST} className="btn btn-light">
-		                        Back to Unit List
-		                    </Link>
+		                     <Button onClick={e => this.props.history.push("/unit")} variant="contained" color="primary">
+                  				Back
+              		  		</Button>
 		                    <h4 className="display-4 text-center">Add/Update Unit</h4>
-		                    <form className={classes.root} onSubmit={this.onSubmit}>
+		                    <form onSubmit={this.onSubmit}>
 		                        <div className="form-group">
-		                        	<TextField
-		                        	 id="filled-name"
-						             label="Name"
-						             name="name"
-						             onChange={this.onChange}
-						             variant="filled"
-							        />
+                            	    <div className="form-group">
+			                        	<TextField
+			                        	 id="name"
+							             label="Name"
+							             name="name"
+							             onChange={this.onChange}
+							             value={this.state.name}
+							             variant="filled"
+								        />
+	                        		</div>
 		                        </div>
-		                        <Button type="submit" variant="contained" color="primary">
-                                    Add
-                               </Button>
+                            <Button type="submit" variant="contained" color="primary">
+                           		 Add
+                        	</Button>
 		                    </form>
 		                </div>
 		            </div>
